@@ -28,18 +28,20 @@ under_factor <- 1
 run_n <- 10
 rr_range <- seq(1.4,1.8,0.05)
 decline_range <- seq(0.02,0.04,0.005)
+imp_range <- seq(0.6,2,0.2)
 
 # Set up grid search
-parameter_list <- expand.grid(rr_range, decline_range)
-parameter_list <- data.frame(parameter_list);names(parameter_list) <- c("rr","decline")
+parameter_list <- expand.grid(rr_range, decline_range,imp_range)
+parameter_list <- data.frame(parameter_list); names(parameter_list) <- c("rr","decline","imp")
 
 source("R/format_data_specific.R")
 
 # Fit model
-fit_model()
+run_inference()
 
 # Extract MLE
-get_MLE()
+output_mle <- get_MLE()
+output1 <- output_mle$out
 
 # Plot outputs  -------------------------------------------------------------
 

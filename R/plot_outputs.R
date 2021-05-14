@@ -9,6 +9,14 @@ col2a=rgb(1,0.2,0,0.2)
 col2c=rgb(1,0.7,0,0.2)
 col2b=rgb(0,0.2,1,0.2)
 
+
+# Extract parameter range
+# mle = mle_val, r95_rr = range_95_rr, r95_dec = range_95_decline, r95_imp = range_95_imp
+
+mle_val <- output_mle$mle[1]
+range_95 <- output_mle$r95_1
+rr_est <- paste0(mle_val," (95% CI:",range_95[1],"-",range_95[2],")")
+
 # - - -
 # India cases
 plot(all_india$date,all_india$cases_new,xlim=x_range,ylim=c(0,5e5),yaxs="i",ylab="cases",xlab="",main="India cases")
@@ -31,6 +39,8 @@ ma_UK_cases_2 <- output1$mov_average
 
 # - - -
 # India imports
+daily_india <- output1$daily_india
+
 plot(all_india$date,daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated imported cases/clusters into UK")
 lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
 
@@ -75,24 +85,37 @@ lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",
 plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
 
 #text(x=tail(all_india$date,1),y=0.04,labels="R=0",col="blue",cex=0.8)
-text(x=tail(all_india$date,1),y=0.08,labels=paste0("R=",best_r),col="blue",cex=0.8,adj=0)
+text(x=tail(all_india$date,1),y=0.08,labels=paste0("R=",mle_val),col="blue",cex=0.8,adj=0)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # Plot R
 
-rr_est <- paste0(mle_val," (95% CI:",range_95[1],"-",range_95[2],")")
-
-plot(rr_store$X1,rr_store$X2,xlim=c(min(rr_range),1.9),ylim=c(-220,-130),xlab="R",ylab="lik",main=paste0("R=", rr_est,", k=",kk_pick,""))
-lines(xx_list,preds$fit)
-lines(c(mle_val,mle_val),c(-1e3,0),lty=2)
-lines(c(range_95[1],range_95[1]),c(-1e3,0),lty=3)
-lines(c(range_95[2],range_95[2]),c(-1e3,0),lty=3)
-
-title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
+# plot(rr_store$X1,rr_store$X2,xlim=c(min(rr_range),1.9),ylim=c(-220,-130),xlab="R",ylab="lik",main=paste0("R=", rr_est,", k=",kk_pick,""))
+# lines(xx_list,preds$fit)
+# lines(c(mle_val,mle_val),c(-1e3,0),lty=2)
+# lines(c(range_95[1],range_95[1]),c(-1e3,0),lty=3)
+# lines(c(range_95[2],range_95[2]),c(-1e3,0),lty=3)
+# 
+# title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 
 # Output plots
 dev.copy(png,paste0("outputs/plot_k",kk_pick,"_u",under_factor,"_d",daily_decline,".png"),units="cm",width=20,height=15,res=200)
 dev.off()
+
+
+
+# Other plots
+# 
+# par(mfcol=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
+# plot(all_india$date,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,40),yaxs="i",ylab="cases",xlab="",main="B.1.617.2 traveller cases")
+# lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
+# 
+# points(traveller_cases$Date,traveller_cases$Number_B_1_617_2,pch=19)
+# lines(traveller_cases$Date,traveller_cases$Number_B_1_617_2)
+# 
+# dev.copy(png,paste0("outputs/traveller_cases.png"),units="cm",width=15,height=10,res=200)
+# dev.off()
+
 

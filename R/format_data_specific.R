@@ -19,13 +19,6 @@ final_value <- 1 #tail(ma_India_variant0,4)[1]
 ma_India_variant <- c(ma_India_variant0[1:(l_IV-4)],rep(final_value,total_days-l_IV+4))
 ma_India_variant[1:3] <- 0
 
-# Estimated ndia daily B.1.617.2 imports
-daily_india <- under_factor*round(downweight_imports*all_india$daily_imports*ma_India_variant)
-
-# Imported cases
-daily_india_seq <- 0*daily_india # Imports based on traveller cases
-daily_india_seq[match(traveller_cases0$Date,all_india$date)] <- traveller_cases0$Number_B_1_617_2
-
 # Moving average and scaling factors
 ma_UK_cases <- ma(all_uk$cases_new,7) # Moving average of UK cases
 
