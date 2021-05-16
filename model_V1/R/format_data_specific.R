@@ -10,7 +10,7 @@ all_india <- all_india %>% mutate(daily_imports = travel_multiplier*cases_new)
 # Downweight recent imports based on incubation period (from McAloon et al. 2020)
 red_list_point <- as.numeric(india_red_list-date_pick)
 total_days <- length(all_india$date)
-downweight_imports <- c(rep(1,red_list_point),1-plnorm(1:(total_days-red_list_point),mean=log(5.1),sd=log(1.65)))
+downweight_imports <- c(rep(1,red_list_point),1-plnorm(1:(total_days-red_list_point),mean=log(5.1),sd=log(1.65)) )
 
 # Format data
 ma_India_variant0 <- ma(data_india$B.1.617.2,7) # Moving average of UK cases

@@ -6,11 +6,6 @@ c.nume<-function(x){
   as.numeric(bp1)
 }
 
-c.nume.50<-function(x){
-  bp1=c(median(x),quantile(x,0.025),quantile(x,0.25),quantile(x,0.75),quantile(x,0.975))
-  as.numeric(bp1)
-}
-
 # Plot data and binom CI
 plot_CI <- function(dates,xx,nn,colA="black") {
   
@@ -23,51 +18,28 @@ plot_CI <- function(dates,xx,nn,colA="black") {
   
 }
 
-decline_f <- function(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_fit){
-  d_list <- (1:(t_max-total_days_uk+4))
-  daily_declineX <- daily_decline + (dt_decline-1)*d_list/10
-  declining_cases <- ma_UK_cases_fit[total_days_uk-4]*(1-daily_declineX)^d_list # Add Poisson noise?
-  
-  ma_UK_cases_2 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],declining_cases)
-  
-  # Alternative version with sequence numbers
-  prop_non_b16172 <- (1-data_fit$B.1.617.2/data_fit$N)
-  prop_non_b16172 <- ma(prop_non_b16172,7); prop_non_b16172[1:3] <- 1 # Fix early points
-  
-  na_remove <- prop_non_b16172[!is.na(prop_non_b16172)]
-  tail_val <- tail(na_remove,1)
-  prop_non_b16172 <- c(prop_non_b16172[1:length(na_remove)],rep(tail_val,t_max-length(na_remove)))
-  #ma_UK_cases_2 <- ma_UK_cases*prop_non_b16172 # Includes overall UK case data
-  
-  na_remove_cases <- ma_UK_cases_fit[1:(total_days_uk-4)]
-  ma_UK_cases0 <- c(na_remove_cases,rep(tail(na_remove_cases,1),t_max-length(na_remove_cases)))
-  ma_UK_cases_2 <- ma_UK_cases0*prop_non_b16172 # Includes overall UK case data
-  
-}
-
 
 # Simulation and likelihood code ---------------------------------------------------------
 
 # Simulate outbreaks - 
 # Loop for R estimation
 
-fit_R <- function(theta,run_n,add_days=25){
+fit_R <- function(r_pick,run_n,add_days=25,import_f = under_factor, daily_decline){
   
   # DEBUG r_pick=1.6; run_n=15; add_days=0; import_f = 0.2; daily_decline=0.02
-  # run_n <- 10; theta <- c(rr=1.5,r_scale=0.8,r_scale_2=0.9,decline=0.03,dt_decline=1,imp=1)
-  
-  r_pick <- theta[["rr"]]
-  r_scale <- theta[["r_scale"]]
-  r_scale_2 <- theta[["r_scale_2"]]
-  import_f <- theta[["imp"]]
-  daily_decline <- theta[["decline"]]
-  dt_decline <- 1
   
   # Estimated India daily B.1.617.2 imports - XX DEBUGGING
-  daily_india <- round(import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
+  daily_india <- round(downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
   #daily_india <- rpois(length(daily_india),lambda=daily_india) # Add Poisson noise
   #daily_india <- daily_india_seq
+  
+  
+  # Define parameters
+  # serial interval from Rai et al: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7448781/
 
+  theta <- list(r=r_pick,k=kk_pick,serial_mean=log(5.4),serial_sd=log(1.5))
+  #plot(0:20,dlnorm(0:20,(theta[["serial_mean"]]),(theta[["serial_sd"]])))
+  
   # Set up initial cases
   seed_list <- NULL
   for(ii in 1:length(daily_india)){
@@ -84,13 +56,18 @@ fit_R <- function(theta,run_n,add_days=25){
   }else{
     long_dates <- all_uk$date
   }
+  
 
   # Extract UK fit data
-  ma_UK_cases_2 <- decline_f(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_fit)
+  all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
+  total_days_uk <- length(all_uk_fit$date)
+  ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
+  declining_cases <- ma_UK_cases_fit[total_days_uk-4]*(1-daily_decline)^(1:(t_max-total_days_uk+4)) # Add Poisson noise?
+  ma_UK_cases_2 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],declining_cases)
   
   # Store_values
   store_vals <- data.frame(matrix(NA, nrow = runs,ncol= t_max))
-  #store_generations <- data.frame(matrix(NA, nrow = runs,ncol= t_max))
+  store_generations <- data.frame(matrix(NA, nrow = runs,ncol= t_max))
   
   for(i in 1:runs) {
     cases <- seed
@@ -98,16 +75,15 @@ fit_R <- function(theta,run_n,add_days=25){
     tt <- seed_list # XX Edit seed cases based on timeseries
     
     timeT <- tt
-    #gen_store <- c(0,length(seed_list));
-    genT <- 0 # Store generation of infection
+    gen_store <- c(0,length(seed_list)); genT <- 0 # Store generation of infection
     
-    while(cases > 0 & length(timeT)<cap_outbreak_size) { # Stop if outbreak very large
+    while(cases > 0) { # Stop once out of time
       
       # Lower SAR in onwards generations?
-      thetaR_in <- r_pick
-      thetaR_in <- r_pick*(genT==0) + r_scale*r_pick*(genT==1) + r_scale_2*r_pick*(genT>1) #
+      thetaR_in <- theta[["r"]]
+      thetaR_in <- theta[["r"]]*(genT<1) + import_f*theta[["r"]]*(genT>=1) #
       
-      secondary0 <- rnbinom(cases,size=kk_pick,mu=thetaR_in) 
+      secondary0 <- rnbinom(cases,size=theta[["k"]],mu=thetaR_in) 
       secondary <- secondary0[secondary0>0]; tt <- tt[secondary0>0] # Remove zeros
       
       t.new <- numeric()
@@ -118,7 +94,7 @@ fit_R <- function(theta,run_n,add_days=25){
         # for(j in 1:length(secondary)) {
         #   t.new <- c(t.new,tt[j] + rlnorm(secondary[j],theta[["serial_mean"]],theta[["serial_sd"]]) )
         # }
-        t.new <- rep(tt,secondary) + rlnorm(sum(secondary),theta_f[["serial_mean"]],theta_f[["serial_sd"]])
+        t.new <- rep(tt,secondary) + rlnorm(sum(secondary),theta[["serial_mean"]],theta[["serial_sd"]])
         
         t.new <- t.new[t.new<=(t_max+1)] # Constrain to be before end of simulation
       }
@@ -128,7 +104,7 @@ fit_R <- function(theta,run_n,add_days=25){
       timeT <- c(timeT,t.new)
       
       genT <- genT + 1
-      #gen_store <- rbind(gen_store,c(genT,cases))
+      gen_store <- rbind(gen_store,c(genT,cases))
 
     } 
     
@@ -170,15 +146,11 @@ fit_R <- function(theta,run_n,add_days=25){
   log_L_b_sum <- log_L_b[!is.na(log_L_b)] %>% sum()
   
   # Calculate likelihood on cases
-  #log_L_p <- dpois(round(ma_UK_cases),lambda=mean_val+ma_UK_cases_2,log=T)
-  
-  log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
-  #log_L_p <- dnbinom(y, mu=theta[["repR"]]*muAll*yprop,size=1/theta[["repvol"]],log=T) 
-  
+  log_L_p <- dpois(round(ma_UK_cases),lambda=mean_val+ma_UK_cases_2,log=T)
   log_L_p_sum <- log_L_p[!is.na(log_L_p)] %>% sum()
   
   # Total likelihood
-  log_L_sum <- log_L_b_sum #+ log_L_p_sum 
+  log_L_sum <- log_L_b_sum + log_L_p_sum 
   
   # Output fits
   list(lik = log_L_sum, traj = pred_interval,long_dates = long_dates, mov_average = ma_UK_cases_2, daily_india = daily_india)
@@ -312,106 +284,97 @@ get_MLE <- function(){
 
 
 
+# Inference code - White & Pagano ---------------------------------------------------------
 
-# Simulation deterministic  ---------------------------------------------------------
-
-fit_R_deterministic <- function(theta,run_n,add_days=25){
+fit__WP <- function(r_pick,run_n,add_days=25,import_f = under_factor, daily_decline){
   
-  # DEBUG r_pick=1.6; run_n=15; add_days=0; import_f = 0.2; daily_decline=0.02
-  # theta <- c(rr=1.6,r_scale=1,r_scale_2=1,decline=0.02,dt_decline=1,imp=2,rep_vol=1); add_days=0
+  # DEBUG r_pick=1.5; run_n=20; add_days=0; import_f = under_factor
   
-  r_pick <- theta[["rr"]]
-  r_scale <- theta[["r_scale"]]
-  r_scale_2 <- 1 #theta[["r_scale_2"]]
-  import_f <- theta[["imp"]]
-  daily_decline <- theta[["decline"]]
-  dt_decline <- 1 #theta[["dt_decline"]] # Scale rate of change
-  rep_vol <- theta[["rep_vol"]]
+  # Estimated India daily B.1.617.2 imports
+  daily_india <- import_f*round(downweight_imports*all_india$daily_imports*ma_India_variant)
   
-  # Estimated India daily B.1.617.2 imports - XX DEBUGGING
-  daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
-  daily_india <- c(daily_india,rep(0,add_days)) # Add more initial points 
-  #daily_india <- rpois(length(daily_india),lambda=daily_india) # Add Poisson noise
-  #daily_india <- daily_india_seq
-
+  # Define parameters
+  # serial interval from Rai et al: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7448781/
+  
+  theta <- list(r=r_pick,k=kk_pick,serial_mean=log(5.4),serial_sd=log(2))
   #plot(0:20,dlnorm(0:20,(theta[["serial_mean"]]),(theta[["serial_sd"]])))
-
+  
+  
   # Set up dates
+  runs <- run_n
   t_max <- total_days+add_days
-  if(add_days>0){
-    long_dates <- c(all_uk$date,max(all_uk$date)+1:add_days)
-    # Set up matrix
-    serial_mat <- matrix(0,nrow=t_max,ncol=(t_max+21))
-    for(ii in 1:t_max){
-      serial_mat[ii,ii:(ii+20)] <- dlnorm(0:20,theta_f[["serial_mean"]],theta_f[["serial_sd"]])
-    }
-    serial_mat <- serial_mat[,1:t_max]
-  }else{
-    long_dates <- all_uk$date
-    serial_mat <- serial_mat0
-  }
-
+  
+  daily_india
+  
+  
+  # To do - restructure fits to get raw values?
+  
   # Extract UK fit data
-  ma_UK_cases_2 <- decline_f(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_fit)
+  all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
+  total_days_uk <- length(all_uk_fit$date)
+  ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
+  ma_UK_cases_2 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],ma_UK_cases_fit[total_days_uk-4]*(1-daily_decline)^(1:(t_max-total_days_uk+4)) )
   
   # Store_values
-  store_vals <- rep(0,t_max)
-
-  # Add onwards transmission from travellers
-  serial_mat2 <- serial_mat*daily_india*r_pick
-  store_vals1 <- store_vals + colSums(serial_mat2)
+  store_vals <- data.frame(matrix(NA, nrow = runs,ncol= t_max))
+  store_generations <- data.frame(matrix(NA, nrow = runs,ncol= t_max))
   
-  # Add onwards transmission from first genertion - exclude travellers for now to avoid double counting
-  serial_mat2 <- serial_mat*store_vals1*r_pick*r_scale
-  store_vals <- store_vals + colSums(serial_mat2)
-  
-  
-  # Add onwards transmission from subsequent generations - reduces twice
-  for(ii in 1:t_max){
-    store_vals <- store_vals + store_vals[ii]*serial_mat[ii,]*r_pick*r_scale*r_scale_2
+  for(i in 1:runs) {
+    cases <- seed
+    
+    t <- seed_list # XX Edit seed cases based on timeseries
+    
+    timeT <- t 
+    gen_store <- c(0,length(seed_list)); genT <- 0 # Store generation of infection
+    
+    while(cases > 0) { # Stop once out of time
+      secondary <- rnbinom(cases,size=theta[["k"]],mu=theta[["r"]]) 
+      t.new <- numeric()
+      for(j in 1:length(secondary)) {
+        t.new <- c(t.new,t[j] + rlnorm(secondary[j],theta[["serial_mean"]],theta[["serial_sd"]]) )
+      }
+      
+      t.new <- t.new[t.new<(t_max+1)] # Constrain to be before end of simulation
+      cases <- length(t.new) 
+      t <- t.new
+      timeT <- c(timeT,t.new)
+      
+      genT <- genT + 1
+      gen_store <- rbind(gen_store,c(genT,cases))
+      
+    } 
+    
+    # Tally incidence:
+    tally_times <- table(round(timeT))
+    
+    tally_times
+    time_ID <- as.numeric(names(tally_times))
+    
+    #store_times <- rep(0,total_days)
+    store_times <- as.numeric(tally_times[match(1:t_max,time_ID)])
+    store_times[is.na(store_times)] <- 0
+    
+    store_vals[i,] <- store_times
+    
   }
   
-  store_vals <- store_vals + store_vals1 # Readd first generation to avoid double counting
-  
   # Calculate estimation interval
-  pred_interval <- rbind(store_vals,store_vals,store_vals)
-  mean_val <-  store_vals
+  pred_interval <- apply(store_vals,2,function(x){c.nume(x)})
+  mean_val <-  apply(store_vals,2,mean)
   
   # Observation model
   data_fit1 <- data_fit[!is.na(data_fit$N),]
-  actual_617 <- data_fit1$B.1.617.2
   actual_prop <- data_fit1$B.1.617.2/data_fit1$N
-  actual_non_6172 <- data_fit1$N - data_fit1$B.1.617.2
-  
   expected_prop <- mean_val/(mean_val+ma_UK_cases_2); expected_prop <- expected_prop[1:length(actual_prop)]
   
-  expected_cases <- (ma_UK_cases); expected_cases <- expected_cases[1:length(actual_prop)]
-  #expected_cases <- (ma_UK_cases_2); expected_cases <- expected_cases[1:length(actual_prop)]
-  expected_6172 <- mean_val; expected_6172 <- expected_6172[1:length(actual_prop)]
-  
-  
-  # DEBUG
-  #plot(data_fit1$B.1.617.2/data_fit1$N);lines(expected_prop)
   #expected_prop <- mean_val/(ma_UK_cases_2); expected_prop <- expected_prop[1:length(actual_prop)]
   
-  # XX CONVERT TO HYPERGEOMETRIC?
-  # - - 
-  # Calculate likelihood on 617.2
-  #log_L_b <- dhyper(x=data_fit1$B.1.617.2,m=round(expected_6172),n=round(expected_cases),k=data_fit1$N,log=T)
-  
-  log_L_b <- dnbinom(actual_617,mu=(expected_6172*data_fit1$N/expected_cases),size=1/rep_vol,log=T)
-  
-  #log_L_b <- dbinom(data_fit1$B.1.617.2,data_fit1$N,expected_prop,log=T)
+  # Calculate likelihood on proportions
+  log_L_b <- dbinom(data_fit1$B.1.617.2,data_fit1$N,expected_prop,log=T)
   log_L_b_sum <- log_L_b[!is.na(log_L_b)] %>% sum()
   
   # Calculate likelihood on cases
-  #log_L_p <- dpois(round(ma_UK_cases),lambda=mean_val+ma_UK_cases_2,log=T)
-
-  #log_L_bP <- dhyper(x=actual_non_6172,m=round(expected_cases),n=round(expected_6172),k=data_fit1$N,log=T)
-
-  #log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
-  log_L_p <- dnbinom(all_uk$cases_new,mu=(mean_val+ma_UK_cases_2),size=1/rep_vol,log=T)
-  
+  log_L_p <- dpois(round(ma_UK_cases),lambda=mean_val+ma_UK_cases_2,log=T)
   log_L_p_sum <- log_L_p[!is.na(log_L_p)] %>% sum()
   
   # Total likelihood
@@ -422,7 +385,3 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   
   
 }
-
-# End loop
-
-

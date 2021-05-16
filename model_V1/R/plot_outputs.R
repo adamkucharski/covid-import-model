@@ -14,14 +14,11 @@ col2_grey <- rgb(0,0,0,0.2)
 # Extract parameter range
 # mle = mle_val, r95_rr = range_95_rr, r95_dec = range_95_decline, r95_imp = range_95_imp
 
-# XX NEED TO UPDATE
-# mle_r <- output_mle$mle[1]
-# range_95 <- output_mle$r95_rr
-# rr_est <- paste0(mle_r," (95% CI:",range_95[1],"-",range_95[2],")")
+mle_r <- output_mle$mle[1]
+range_95 <- output_mle$r95_rr
+rr_est <- paste0(mle_r," (95% CI:",range_95[1],"-",range_95[2],")")
 
-# Extrace values of interest
 pred_interval <- output1$traj
-
 long_dates <- output1$long_dates
 ma_UK_cases_2 <- output1$mov_average
 
@@ -45,16 +42,16 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # India imports
 daily_india <- output1$daily_india
 
-plot(long_dates,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated imported cases/clusters into UK")
+plot(all_india$date,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated imported cases/clusters into UK")
 lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
  
 # Estimate for imports
-imp_scale <- c.nume(thetatab[,"imp"])
+imp_scale <- c(output_mle$mle$imp,output_mle$r95_imp[1],output_mle$r95_imp[2])
 
 ratio_rep <- sum(traveller_cases$Number_B_1_617_2)/sum(daily_india)
 
-polygon(c(long_dates,rev(long_dates)),c(imp_scale[2]*daily_india/imp_scale[1],rev(imp_scale[3]*daily_india/imp_scale[1])),lty=0,col=col2c)
-lines(long_dates,daily_india,col="orange")
+polygon(c(all_india$date,rev(all_india$date)),c(imp_scale[2]*daily_india/imp_scale[1],rev(imp_scale[3]*daily_india/imp_scale[1])),lty=0,col=col2c)
+lines(all_india$date,daily_india,col="orange")
 
 # PHE data
 points(traveller_cases$Date,traveller_cases$Number_B_1_617_2)
@@ -75,90 +72,52 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
 ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
+
 t_max <- length(long_dates)
-
-decline_95 <- c.nume(thetatab[,"decline"])
-dt_95 <- c.nume(thetatab[,"dt_decline"])
-
-ma_UK_cases_f1 <- decline_f(total_days_uk,t_max,decline_95[1],1,ma_UK_cases_fit)
-ma_UK_cases_f2 <- decline_f(total_days_uk,t_max,decline_95[2],1,ma_UK_cases_fit)
-ma_UK_cases_f3 <- decline_f(total_days_uk,t_max,decline_95[3],1,ma_UK_cases_fit)
+dd_conf <- c(output_mle$mle$decline,output_mle$r95_dec[1],output_mle$r95_dec[2])
+ma_UK_cases_f1 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],ma_UK_cases_fit[total_days_uk-4]*(1-dd_conf[1])^(1:(t_max-total_days_uk+4)) )
+ma_UK_cases_f2 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],ma_UK_cases_fit[total_days_uk-4]*(1-dd_conf[2])^(1:(t_max-total_days_uk+4)) )
+ma_UK_cases_f3 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],ma_UK_cases_fit[total_days_uk-4]*(1-dd_conf[3])^(1:(t_max-total_days_uk+4)) )
 
 # Plot data
-plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,6000),yaxs="i",ylab="cases",xlab="",main="UK cases")
+plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,1e4),yaxs="i",ylab="cases",xlab="",main="UK cases")
 lines(all_uk$date,ma_UK_cases,col="black",lwd=3)
 lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
 
 # Plot decline
 lines(long_dates,ma_UK_cases_f1,col="black",lty=2)
-#polygon(c(long_dates,rev(long_dates)),c(ma_UK_cases_f2,rev(ma_UK_cases_f3)),lty=0,col=col2_grey)
+polygon(c(long_dates,rev(long_dates)),c(ma_UK_cases_f2,rev(ma_UK_cases_f3)),lty=0,col=col2_grey)
 
 # Plot B.1.617.2 and overall cases
 lines(long_dates,pred_interval[1,],col="red")
-#polygon(c(long_dates,rev(long_dates)),c(pred_interval[2,],rev(pred_interval[3,])),lty=0,col=col2a)
+polygon(c(long_dates,rev(long_dates)),c(pred_interval[2,],rev(pred_interval[3,])),lty=0,col=col2a)
 
 lines(long_dates,ma_UK_cases_2+pred_interval[1,],col="blue")
-#polygon(c(long_dates,rev(long_dates)),c(ma_UK_cases_2+pred_interval[2,],rev(ma_UK_cases_2+pred_interval[3,])),lty=0,col=col2b)
+polygon(c(long_dates,rev(long_dates)),c(ma_UK_cases_2+pred_interval[2,],rev(ma_UK_cases_2+pred_interval[3,])),lty=0,col=col2b)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # - - -
 # Proportion India-linked
-#plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range,ylim=c(0,0.5),yaxs="i",ylab="Proportion",xlab="",main="Proportion B.1.617.2 in UK")
-#lines(c(india_red_list,india_red_list),c(0,1e5),col="grey",lty=2)
-
-# plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
-# lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",lty=1)
-
-plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range,ylim=c(0,300),yaxs="i",ylab="Number",xlab="",main="B.1.617.2 cases in UK")
+plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range,ylim=c(0,0.5),yaxs="i",ylab="Proportion",xlab="",main="Proportion B.1.617.2 in UK")
 lines(c(india_red_list,india_red_list),c(0,1e5),col="grey",lty=2)
 
-points(data_proportion$sample_date,data_proportion$B.1.617.2)
-lines(long_dates,pred_interval[1,]*data_fit$N/ma_UK_cases,col="red",lty=1,lwd=2)
-
-
-
-#polygon(c(long_dates,rev(long_dates)),c(pred_interval[2,]/(pred_interval[2,]+ma_UK_cases_2),rev(pred_interval[3,]/(pred_interval[3,]+ma_UK_cases_2))),lty=0,col=col2b)
+polygon(c(long_dates,rev(long_dates)),c(pred_interval[2,]/(pred_interval[2,]+ma_UK_cases_2),rev(pred_interval[3,]/(pred_interval[3,]+ma_UK_cases_2))),lty=0,col=col2b)
 #lines(all_india$date,pred_interval[1,1:total_days]/(ma_UK_cases+pred_interval[1,1:total_days]),col="blue",lwd=2)
-
+lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",lty=1)
 
 # polygon(c(long_dates,rev(long_dates)),c(pred_interval[2,]/ma_UK_cases_2,rev(pred_interval[3,]/ma_UK_cases_2)),lty=0,col=col2b)
 # lines(all_india$date,pred_interval[1,1:total_days]/ma_UK_cases,col="blue",lwd=2)
 # lines(long_dates,pred_interval[1,]/ma_UK_cases_2,col="blue",lty=2)
 
-
+plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
 
 #text(x=tail(all_india$date,1),y=0.04,labels="R=0",col="blue",cex=0.8)
-#text(x=tail(data_proportion$sample_date,1)-5,y=0.08,labels=paste0("R=",rr_est),col="blue",cex=0.8,adj=0)
+text(x=tail(data_proportion$sample_date,1)-5,y=0.08,labels=paste0("R=",rr_est),col="blue",cex=0.8,adj=0)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
-# Plot R estimates
-
-plot(c(1:3),-1*c(1:3),xlim=c(0.5,3.5),ylim=c(0,2),xlab="",ylab="R",xaxt="n")
-grid(ny = NULL, nx=NA, col = "lightgray")
-
-#axis(1, at=c(1,2,3,4), labels=c("Traveller","Contact of traveller","Onwards","SPI-M"))
-axis(1, at=c(1,2,3), labels=c("Traveller","Contact of traveller","Onwards"))
-
-xx <- 4
-#lines(c(xx,xx),c(0.8,1.1),lwd=4,lend=1) # SPI-M consensus
-
-for(ii in 1:3){
-  if(ii==1){range_ii <- c.nume.50(thetatab[,1])}
-  if(ii==2){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2])}
-  if(ii==3){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2]*thetatab[,3])}
-
-  lines(c(ii,ii),c(range_ii[2],range_ii[5]),col=col2b)
-  lines(c(ii,ii),c(range_ii[3],range_ii[4]),lwd=2.5,col="light blue")
-  points(ii,range_ii[1],pch=19,cex=1,col="blue")
-  
-  if(ii==1){points(ii,r_phe_report[["travel"]])}
-  if(ii>1){points(ii,r_phe_report[["non_travel"]])}
-  
-}
-
-title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
+# Plot R
 
 # plot(rr_store$X1,rr_store$X2,xlim=c(min(rr_range),1.9),ylim=c(-220,-130),xlab="R",ylab="lik",main=paste0("R=", rr_est,", k=",kk_pick,""))
 # lines(xx_list,preds$fit)
@@ -168,31 +127,11 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # 
 # title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
+
 # Output plots
-dev.copy(png,paste0("outputs/plot_k",kk_pick,"_",iiM,".png"),units="cm",width=20,height=15,res=200)
+dev.copy(png,paste0("outputs/plot_k",kk_pick,".png"),units="cm",width=20,height=15,res=200)
 dev.off()
 
-# Plot posteriors ---------------------------------------------------------
-
-plot_post <- function(){
-  par(mfcol=c(3,2),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
-  
-  
-  # Plot likelihood
-  plot(sim_likOut,type="l")
-  
-  hist(thetatab[,1],main="R traveller")
-  hist(thetatab[,1]*thetatab[,2],main="R second")
-  hist(thetatab[,1]*thetatab[,3],main="R onwards")
-  hist(thetatab[,4],main="decline")
-  #hist(thetatab[,5]-1,main="dt_decline")
-  hist(thetatab[,6],main="imports")
-  
-  # Output plots
-  dev.copy(png,paste0("outputs/posterior_k",kk_pick,"_",iiM,".png"),units="cm",width=20,height=15,res=200)
-  dev.off()
-
-}
 
 
 # Other plots

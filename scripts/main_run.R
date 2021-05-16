@@ -5,6 +5,7 @@ library(covidregionaldata)
 library(forecast)
 library(mgcv)
 library(doMC)
+library(mvtnorm)
 
 
 # Set directory
@@ -13,38 +14,41 @@ data_path <- "~/Dropbox/LSHTM/2020_nCoV_main_db/B117_variant/relative_advantage/
 
 registerDoMC(4)  #change to your number of CPU cores
 
-# Set up data ----------------------------------------------
+# Load data ----------------------------------------------
 
 source("R/load_data.R") # Check slow import function enable
 
+# Load model functions ----------------------------------------------
+
 source("R/model_functions.R")
+
+source("R/model_mcmc.R")
 
 # Run inference  -------------------------------------------------------------
 
 # Define parameters
-kk_pick <- 0.2
-daily_decline <- 0.01 # assumed daily growth rate
-under_factor <- 1
-run_n <- 10
-rr_range <- seq(1.4,1.8,0.05)
-decline_range <- seq(0.02,0.04,0.005)
-imp_range <- seq(0.6,2,0.2)
-
-# Set up grid search
-parameter_list <- expand.grid(rr_range, decline_range,imp_range)
-parameter_list <- data.frame(parameter_list); names(parameter_list) <- c("rr","decline","imp")
-
-source("R/format_data_specific.R")
+kk_pick <- 0.2 # overdispersion
+cap_outbreak_size <- 1e4 # Cap simulations to prevent runaway epidemics
 
 # Fit model
-run_inference()
+run_transmission_mcmc(MCMC.runs = 2e5)
 
-# Extract MLE
-output_mle <- get_MLE()
-output1 <- output_mle$out
+# Simulate & plot outputs  -------------------------------------------------------------
 
-# Plot outputs  -------------------------------------------------------------
+# Extract posteriors
+iiM <- 1
+source("R/load_posterior.R",local=TRUE)
+
+# Run fitted model
+
+theta_mle <- data.frame(thetatab[pick.max,])
+#theta_mle <- c(rr=1.6,r_scale=0.9,r_scale_2=0.9,decline=0.2,dt_decline=0.5,imp=1.5)
+
+#output1 <- fit_R(theta_mle,run_n=20,add_days = 0)
+output1 <- fit_R_deterministic(theta_mle,add_days = 0)
 
 source("R/plot_outputs.R")
+
+# plot_post()
 
 
