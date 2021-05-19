@@ -29,26 +29,28 @@ source("R/model_mcmc.R")
 # Define parameters
 kk_pick <- 0.2 # overdispersion
 cap_outbreak_size <- 1e4 # Cap simulations to prevent runaway epidemics
+priorScale <- function(x){ifelse(abs(x)<=1,1,0)}
 
 # Fit model
-run_transmission_mcmc(MCMC.runs = 2e5)
+run_transmission_mcmc(MCMC.runs = 1e5)
 
 # Simulate & plot outputs  -------------------------------------------------------------
 
 # Extract posteriors
-iiM <- 1
-source("R/load_posterior.R",local=TRUE)
+for( iiM in 2){
+  source("R/load_posterior.R",local=TRUE)
+  
+  # Run fitted model
+  theta_mle <- data.frame(thetatab[pick.max,])
+  #theta_mle <- c(rr=1.6,r_scale=0.9,r_scale_2=0.9,decline=0.2,dt_decline=0.5,imp=1.5)
+  output1 <- fit_R_deterministic(theta_mle,add_days = 0)
+  
+  source("R/plot_outputs.R")
 
-# Run fitted model
-
-theta_mle <- data.frame(thetatab[pick.max,])
-#theta_mle <- c(rr=1.6,r_scale=0.9,r_scale_2=0.9,decline=0.2,dt_decline=0.5,imp=1.5)
-
-#output1 <- fit_R(theta_mle,run_n=20,add_days = 0)
-output1 <- fit_R_deterministic(theta_mle,add_days = 0)
-
-source("R/plot_outputs.R")
+}
 
 # plot_post()
+
+# compare_R_fits()
 
 

@@ -8,18 +8,18 @@
 
 run_transmission_mcmc <- function(MCMC.runs = 10){
 
-  multichain <- c(1) # run in parallel
-  iiM <- 1
+  multichain <- c(2) # run in parallel
+  #iiM <- 1
   
   # DEBUG  multichain=c(4); MCMC.runs=10; iiM = multichain; prop.risk = F
   
-  #foreach(iiM=multichain) %dopar% {  # Loop over scenarios with parallel MCMC chains
-  for(iiM in multichain){
+  foreach(iiM=multichain) %dopar% {  # Loop over scenarios with parallel MCMC chains
+  #for(iiM in multichain){
 
   # - - - - - - - - - - - 
   # Load relevant data
   thetaR_IC = read_csv("data/thetaR_IC.csv")
-  thetaR_IC <- thetaR_IC[iiM,]
+  thetaR_IC <- thetaR_IC[1,]
   
   # - - - - - - - - - - - 
   # Initialise ICs 
@@ -34,12 +34,15 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
             rep_vol = thetaR_IC$rep_vol
             )
   
-  priorScale <- function(x){ifelse(abs(x)<=1,1,0)}
   
   # Covariance matrices - Add theta and thetaAll together in MCMC runs
   nparam = length(theta) 
   npc = rep(1,nparam)
   pmask = NULL # fix parameters
+  
+  # Define models (i.e. parameters to fit)
+  if(iiM==1){pmask <- c("dt_decline")}
+  if(iiM==2){pmask <- c("r_scale_2","dt_decline")}
   
   npc[match(pmask,names(theta))]=0
   cov_matrix_theta0 = diag(npc)
@@ -61,7 +64,7 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
   accepttab=rep(NA,(MCMC.runs))
   max.length = t_fit  # Need to store enough values
   c_trace_tab=array(NA, dim=c(MCMC.runs+1,max.length)) # Note max length
-
+  intro_trace_tab=array(NA, dim=c(MCMC.runs+1,max.length)) # Note max length
   
   # - - - - - - - - - - - 
   #RUN MCMC:
@@ -103,12 +106,14 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
       thetatab[m+1,] = theta_star
       sim_liktab[m+1] = sim_marg_lik_star
       c_trace_tab[m+1,] = as.numeric(output1$traj[1,])
+      intro_trace_tab[m+1,] = as.numeric(output1$daily_india)
       accepttab[m]=1
       
     }else{
       thetatab[m+1,] = thetatab[m,]
       sim_liktab[m+1] = sim_liktab[m]
       c_trace_tab[m+1,] = c_trace_tab[m,]
+      intro_trace_tab[m+1,] = intro_trace_tab[m,]
       accepttab[m]=0
     }
     
@@ -123,7 +128,7 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
     
     if(m %% min(MCMC.runs,1000) == 0){
       print(c(m,accept_rate,sim_liktab[m],epsilon0))
-      save(sim_liktab,accepttab,c_trace_tab,thetatab,file=paste("outputs/outputR",iiM,".RData",sep=""))
+      save(sim_liktab,accepttab,c_trace_tab,intro_trace_tab,thetatab,file=paste("outputs/outputR",iiM,".RData",sep=""))
     }
     
   } # End MCMC run

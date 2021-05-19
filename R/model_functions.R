@@ -6,6 +6,15 @@ c.nume<-function(x){
   as.numeric(bp1)
 }
 
+doubling_est <- function(x){log((tail(x,1)-head(x,1))/length(x),2)}
+
+doubling_est2 <- function(x){log(2)*length(x)/log(tail(x,1)/head(x,1))}
+
+c.text <- function(x,sigF=2){
+  bp1=signif(c(median(x),quantile(x,0.025),quantile(x,0.975)),sigF)
+  paste(bp1[1]," (95% CrI: ",bp1[2],"-",bp1[3],")",sep="")
+}
+
 c.nume.50<-function(x){
   bp1=c(median(x),quantile(x,0.025),quantile(x,0.25),quantile(x,0.75),quantile(x,0.975))
   as.numeric(bp1)
@@ -31,17 +40,17 @@ decline_f <- function(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_f
   ma_UK_cases_2 <- c(ma_UK_cases_fit[1:(total_days_uk-4)],declining_cases)
   
   # Alternative version with sequence numbers
-  prop_non_b16172 <- (1-data_fit$B.1.617.2/data_fit$N)
-  prop_non_b16172 <- ma(prop_non_b16172,7); prop_non_b16172[1:3] <- 1 # Fix early points
-  
-  na_remove <- prop_non_b16172[!is.na(prop_non_b16172)]
-  tail_val <- tail(na_remove,1)
-  prop_non_b16172 <- c(prop_non_b16172[1:length(na_remove)],rep(tail_val,t_max-length(na_remove)))
-  #ma_UK_cases_2 <- ma_UK_cases*prop_non_b16172 # Includes overall UK case data
-  
-  na_remove_cases <- ma_UK_cases_fit[1:(total_days_uk-4)]
-  ma_UK_cases0 <- c(na_remove_cases,rep(tail(na_remove_cases,1),t_max-length(na_remove_cases)))
-  ma_UK_cases_2 <- ma_UK_cases0*prop_non_b16172 # Includes overall UK case data
+  # prop_non_b16172 <- (1-data_fit$B.1.617.2/data_fit$N)
+  # prop_non_b16172 <- ma(prop_non_b16172,7); prop_non_b16172[1:3] <- 1 # Fix early points
+  # 
+  # na_remove <- prop_non_b16172[!is.na(prop_non_b16172)]
+  # tail_val <- tail(na_remove,1)
+  # prop_non_b16172 <- c(prop_non_b16172[1:length(na_remove)],rep(tail_val,t_max-length(na_remove)))
+  # #ma_UK_cases_2 <- ma_UK_cases*prop_non_b16172 # Includes overall UK case data
+  # 
+  # na_remove_cases <- ma_UK_cases_fit[1:(total_days_uk-4)]
+  # ma_UK_cases0 <- c(na_remove_cases,rep(tail(na_remove_cases,1),t_max-length(na_remove_cases)))
+  # ma_UK_cases_2 <- ma_UK_cases0*prop_non_b16172 # Includes overall UK case data
   
 }
 
@@ -322,7 +331,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   
   r_pick <- theta[["rr"]]
   r_scale <- theta[["r_scale"]]
-  r_scale_2 <- 1 #theta[["r_scale_2"]]
+  r_scale_2 <- theta[["r_scale_2"]]
   import_f <- theta[["imp"]]
   daily_decline <- theta[["decline"]]
   dt_decline <- 1 #theta[["dt_decline"]] # Scale rate of change
@@ -330,9 +339,11 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   
   # Estimated India daily B.1.617.2 imports - XX DEBUGGING
   daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
+  
+  daily_india <- daily_india_seq + import_f*downweight_imports*all_india$daily_imports*ma_India_variant
+  
   daily_india <- c(daily_india,rep(0,add_days)) # Add more initial points 
   #daily_india <- rpois(length(daily_india),lambda=daily_india) # Add Poisson noise
-  #daily_india <- daily_india_seq
 
   #plot(0:20,dlnorm(0:20,(theta[["serial_mean"]]),(theta[["serial_sd"]])))
 
@@ -371,7 +382,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
     store_vals <- store_vals + store_vals[ii]*serial_mat[ii,]*r_pick*r_scale*r_scale_2
   }
   
-  store_vals <- store_vals + store_vals1 # Readd first generation to avoid double counting
+  store_vals <- daily_india + store_vals1 + store_vals # Add imports + first generation to avoid double counting
   
   # Calculate estimation interval
   pred_interval <- rbind(store_vals,store_vals,store_vals)
@@ -410,7 +421,11 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   #log_L_bP <- dhyper(x=actual_non_6172,m=round(expected_cases),n=round(expected_6172),k=data_fit1$N,log=T)
 
   #log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
+  pick_fit <- all_uk$date>as.Date("2021-04-01") # Only ffrom April 1st 2021
+  
   log_L_p <- dnbinom(all_uk$cases_new,mu=(mean_val+ma_UK_cases_2),size=1/rep_vol,log=T)
+  #log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
+  log_L_p <- log_L_p[pick_fit]
   
   log_L_p_sum <- log_L_p[!is.na(log_L_p)] %>% sum()
   

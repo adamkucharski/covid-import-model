@@ -1,5 +1,6 @@
 thetatabA=NULL
 c_trace_tab0=NULL
+intro_trace_tab0=NULL
 
 # Load values
 load(paste("outputs/outputR",iiM,".RData",sep=""))
@@ -17,6 +18,7 @@ sim_likOut = sim_liktab[picks0]
 thetatabA=rbind(thetatabA,thetatab[picks0,])
 
 c_trace_tab0 = rbind(c_trace_tab0,c_trace_tab[picks0,])
+intro_trace_tab0 = rbind(intro_trace_tab0,intro_trace_tab[picks0,])
 
 picks=c(1:length(thetatabA[,1]))
 
@@ -24,11 +26,12 @@ pick.max = picks[sim_likOut[picks]==max(sim_likOut[picks])][1] # Maximum likelih
 
 thetatab=thetatabA
 c_trace_tab=c_trace_tab0
+intro_trace_tab=intro_trace_tab0
 
 # MLE
 thetatab[pick.max,]
 
-plot(sim_likOut,type="l")
+#plot(sim_likOut,type="l")
 
 # Extract posteriors
 
