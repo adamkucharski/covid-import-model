@@ -8,9 +8,9 @@ _Note: this is working repository, so code and data are likely to change over ti
 
 1. Download required data files from COG-UK and India from GISAID via outbreak.data and place in a local folder:
 
-> [cog_metadata.csv](https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv)
+• [cog_metadata.csv](https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv)
 
-> Download `outbreakinfo_mutation_report_data_[date].tsv` from the lineage prevalence visualisation [here](https://outbreak.info/location-reports?loc=IND) and rename as `outbreakinfo_mutation_report_data.tsv`
+• Download `outbreakinfo_mutation_report_data_[date].tsv` from the lineage prevalence visualisation [here](https://outbreak.info/location-reports?loc=IND) and rename as `outbreakinfo_mutation_report_data.tsv`
 
 2. Define file paths:
 
