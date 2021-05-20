@@ -1,6 +1,6 @@
 # Set up model-specific data and parameters ----------------------------------------------
 
-# Imports in PHE data Feb,Mar,Apr
+# Assumed imports in Feb,Mar,Apr
 south_asia_imports <- 1079
 total_cases_india <- all_india %>% filter(country == "India", date<as.Date("2021-04-23")) %>% select(cases_new) %>% sum()
 travel_multiplier <- south_asia_imports/total_cases_india

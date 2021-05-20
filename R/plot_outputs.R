@@ -274,6 +274,8 @@ plot_post <- function(){
 
 }
 
+# Plot R fits on same plot  ---------------------------------------------------------
+
 compare_R_fits <- function(){
   
   par(mfcol=c(1,2),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
@@ -320,27 +322,8 @@ compare_R_fits <- function(){
   
 }
 
-
-# Other plots
-# 
-# par(mfcol=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
-# plot(all_india$date,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,40),yaxs="i",ylab="cases",xlab="",main="B.1.617.2 traveller cases")
-# lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
-# 
-# lines(traveller_cases$Date,traveller_cases$Number_B_1_617_2,col="grey")
-# 
-# points(traveller_cases$Date,traveller_cases$Number_B_1_617_2,pch=19)
-# 
-# dev.copy(png,paste0("outputs/traveller_cases.png"),units="cm",width=15,height=10,res=200)
-# dev.off()
-
+# Output R estimates
 print(store_val)
-
-
-plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range,ylim=c(0,0.5),yaxs="i",ylab="Proportion",xlab="",main="Proportion B.1.617.1 & B.1.617.2 in UK")
-
-plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
-plot_CI(data_proportion$sample_date,data_proportion$B.1.617.1,data_proportion$N,col="blue")
 
 
 

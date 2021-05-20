@@ -6,11 +6,12 @@ library(forecast)
 library(mgcv)
 library(doMC)
 library(mvtnorm)
+library(data.table)
 
 
 # Set directory
 setwd("~/Documents/GitHub/covid-import-model")
-data_path <- "~/Dropbox/LSHTM/2020_nCoV_main_db/B117_variant/relative_advantage/"
+data_path <- "~/Documents/COVID_data/B_617_2/"
 
 registerDoMC(4)  #change to your number of CPU cores
 
