@@ -56,129 +56,6 @@ decline_f <- function(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_f
 
 
 
-
-# Run inference -----------------------------------------------------------
-
-run_inference <- function(){
-
-  #rr_store <- NULL
-  
-  # Run grid search
-  
-  estimate_list <- foreach(ii = 1:nrow(parameter_list)) %dopar% {
-    # for(jj in 1:decline_range){
-    #   output1 <- fit_R(rr_range[ii],run_n,add_days = 0, import_est = daily_india, daily_decline = decline_range[jj])
-    #   c(rr_range[ii],output1$lik)
-    # }
-    output1 <- fit_R(parameter_list$rr[ii],run_n,add_days = 0, import_f = parameter_list$imp[ii], daily_decline=parameter_list$decline[ii])
-    output1$lik
-  }
-  
-  rr_store <- cbind(parameter_list,unlist(estimate_list)); names(rr_store) <- c(names(parameter_list),"lik")
-  
-  # for(ii in 1:length(rr_range)){
-  #   output1 <- fit_R(rr_range[ii],run_n,add_days = 0, import_est = daily_india)
-  #   rr_store <- rbind(rr_store,c(rr_range[ii],output1$lik))
-  # }
-
-  
-  #plot(rr_store[,1],rr_store[,2],xlab="R",ylab="lik")
-  
-  write_csv(data.frame(rr_store),paste0("outputs/fit",kk_pick,".csv"))
-
-}
-
-
-# Extract fit and estimate MLE --------------------------------------------
-
-get_MLE <- function(){
-
-  # Get MLE
-  rr_store <- read_csv(paste0("outputs/fit",kk_pick,".csv"))
-  rr_store <- rr_store[rr_store$lik!=-Inf,] #<- -1e5 # Remove invalid points
-  # 
-  # # Fit spline to estimates
-  # modelB.P <- gam(lik ~ s(rr,k=8) + s(decline,k=4) + s(imp,k=4) , data = rr_store,family = "gaussian") 
-  # x1_list <- seq(min(rr_store$rr),max(rr_store$rr),0.01)
-  # x2_list <- seq(min(rr_store$decline),max(rr_store$decline),0.0005)
-  # x3_list <- seq(min(rr_store$imp),max(rr_store$imp),0.01)
-  # 
-  # param_long <- expand.grid(x1_list, x2_list, x3_list)
-  # param_long <- data.frame(param_long); names(param_long) <- names(parameter_list)
-  # 
-  # preds <- predict(modelB.P, newdata = list(rr=param_long$rr,decline=param_long$decline,imp=param_long$imp), type = "link", se.fit = TRUE)
-  # 
-  # # Spilne fit to surface
-  # surface_est <- cbind(param_long,preds$fit); names(surface_est) <- c(names(parameter_list),"lik")
-  # 
-  # # DEBUG  - PLOT SOME SLICES
-  # #surface_est %>% filter(imp==1)
-  # rr_store %>% filter(rr==1.4,imp==1, decline==0.03)
-  # 
-  
-  # - - -
-  # Profile individual parameters:
-  # R estimate
-  x1 <- unique(rr_store$rr); lik1 <- sapply(x1,function(x){max(rr_store[rr_store$rr==x,"lik"])})
-  data_lik <- data.frame(cbind(x1,lik1));   data_lik <- data_lik[data_lik$lik1>(max(data_lik$lik1)-100),] # Remove outliers
-  #sapply(unique(rr_store$rr),function(x){max(rr_store[rr_store$rr==x,"lik"])})
-  modelB.P <- gam(lik1 ~ s(x1,k=4) , data = data_lik,family = "gaussian") 
-  x1_list <- seq(min(x1),max(x1),0.001); preds <- predict(modelB.P, newdata = list(x1=x1_list), type = "link", se.fit = TRUE)
-
-  mle_val_rr <- x1_list[which(preds$fit==max(preds$fit))]; range_95 <- x1_list[which(preds$fit>=(max(preds$fit)-1.92))]
-  range_95_rr <- c(min(range_95),max(range_95))
-  
-  # Decline estimate
-  x1 <- unique(rr_store$decline); lik1 <- sapply(x1,function(x){max(rr_store[rr_store$decline==x,"lik"])})
-  data_lik <- data.frame(cbind(x1,lik1));   data_lik <- data_lik[data_lik$lik1>(max(data_lik$lik1)-100),] # Remove outliers
-  modelB.P <- gam(lik1 ~ s(x1,k=4) , data = data_lik,family = "gaussian") 
-  x1_list <- seq(min(x1),max(x1),0.01); preds <- predict(modelB.P, newdata = list(x1=x1_list), type = "link", se.fit = TRUE)
-
-  mle_val_dec <- x1_list[which(preds$fit==max(preds$fit))]; range_95 <- x1_list[which(preds$fit>=(max(preds$fit)-1.92))]
-  range_95_decline <- c(min(range_95),max(range_95))
-  
-  # Import estimate
-  x1 <- unique(rr_store$imp); lik1 <- sapply(x1,function(x){max(rr_store[rr_store$imp==x,"lik"])})
-  data_lik <- data.frame(cbind(x1,lik1)); data_lik <- data_lik[data_lik$lik1>(max(data_lik$lik1)-100),] # Remove outliers
-  modelB.P <- gam(lik1 ~ s(x1,k=4) , data = data_lik,family = "gaussian") 
-  x1_list <- seq(min(x1),max(x1),0.001); preds <- predict(modelB.P, newdata = list(x1=x1_list), type = "link", se.fit = TRUE)
-  
-  mle_val_imp <- x1_list[which(preds$fit==max(preds$fit))]; range_95 <- x1_list[which(preds$fit>=(max(preds$fit)-1.92))]
-  range_95_imp <- c(min(range_95),max(range_95))
-  
-  # Combine estimates
-  mle_val <- matrix(c(mle_val_rr,mle_val_dec,mle_val_imp),ncol=3); mle_val <- data.frame(mle_val);  names(mle_val) <- names(parameter_list)
-
-  
-  plot(x1,lik1,ylim=c(max(lik1)-50,max(lik1))); lines(x1_list,preds$fit)
-  
-  #modelB.P <- gam(lik ~ s(rr,k=8) , data = rr_store,family = "gaussian") 
-  
-  # Estimate MLE
-  #mle_val <- surface_est[which(preds$fit==max(preds$fit)),]
-  #range_95 <- param_long[which(preds$fit>=mle_val$lik-1.92),]
-
-  # Calculate MLE from grid search
-  # mle_val <- rr_store[which(rr_store$lik==max(rr_store$lik)),]
-  # range_95 <- rr_store[which(rr_store$lik>=(mle_val$lik-1.92)),]
-  
-  # Sense check MLE:
-  #rr_store %>% filter(rr==1.4,decline==0.02,imp==1)
-  #plot(rr_store$lik,ylim=c(max(rr_store$lik)-5,max(rr_store$lik)))
-  
-  # range_95_rr <- c(min(range_95$rr),max(range_95$rr))
-  # range_95_decline <- c(min(range_95$decline),max(range_95$decline))
-  # range_95_imp <- c(min(range_95$imp),max(range_95$imp))
-
-  
-  list(mle = mle_val, r95_rr = range_95_rr, r95_dec = range_95_decline, r95_imp = range_95_imp)
-
-}
-
-
-
-
-
 # Simulation deterministic  ---------------------------------------------------------
 
 fit_R_deterministic <- function(theta,run_n,add_days=25){
@@ -254,7 +131,6 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   expected_prop <- mean_val/(mean_val+ma_UK_cases_2); expected_prop <- expected_prop[1:length(actual_prop)]
   
   expected_cases <- (ma_UK_cases); expected_cases <- expected_cases[1:length(actual_prop)]
-  #expected_cases <- (ma_UK_cases_2); expected_cases <- expected_cases[1:length(actual_prop)]
   expected_6172 <- mean_val; expected_6172 <- expected_6172[1:length(actual_prop)]
   
   
@@ -262,26 +138,18 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   #plot(data_fit1$B.1.617.2/data_fit1$N);lines(expected_prop)
   #expected_prop <- mean_val/(ma_UK_cases_2); expected_prop <- expected_prop[1:length(actual_prop)]
   
-  # XX CONVERT TO HYPERGEOMETRIC?
+  #
   # - - 
   # Calculate likelihood on 617.2
-  #log_L_b <- dhyper(x=data_fit1$B.1.617.2,m=round(expected_6172),n=round(expected_cases),k=data_fit1$N,log=T)
-  
   log_L_b <- dnbinom(actual_617,mu=(expected_6172*data_fit1$N/expected_cases),size=1/rep_vol,log=T)
-  
-  #log_L_b <- dbinom(data_fit1$B.1.617.2,data_fit1$N,expected_prop,log=T)
+
   log_L_b_sum <- log_L_b[!is.na(log_L_b)] %>% sum()
   
-  # Calculate likelihood on cases
-  #log_L_p <- dpois(round(ma_UK_cases),lambda=mean_val+ma_UK_cases_2,log=T)
-
-  #log_L_bP <- dhyper(x=actual_non_6172,m=round(expected_cases),n=round(expected_6172),k=data_fit1$N,log=T)
-
-  #log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
-  pick_fit <- all_uk$date>as.Date("2021-04-01") # Only ffrom April 1st 2021
+  # Calculate likelihood of overall cases
+  pick_fit <- all_uk$date>as.Date("2021-04-01") # Only from April 1st 2021
   
   log_L_p <- dnbinom(all_uk$cases_new,mu=(mean_val+ma_UK_cases_2),size=1/rep_vol,log=T)
-  #log_L_p <- dpois(all_uk$cases_new,lambda=(mean_val+ma_UK_cases_2),log=T)
+
   log_L_p <- log_L_p[pick_fit]
   
   log_L_p_sum <- log_L_p[!is.na(log_L_p)] %>% sum()

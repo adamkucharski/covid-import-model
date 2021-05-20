@@ -1,20 +1,29 @@
-# - - -
-# Load country data (slow)
 
-all_countries <- get_national_data() 
+# - - -
+# Load covidregionaldata
+
+if(!exists("all_countries")){
+  all_countries <- get_national_data() # Load data from covidregionaldata (slow)
+}
 
 # - - -
 # Load downloaded data
 
-cog0 = fread("cog_metadata.csv")[country == "UK" & pillar_2 == TRUE]
-cog = cog0[, .(.N,
-               B.1.617.1 = sum(lineage %like% "B\\.1\\.617\\.1"),
-               B.1.617.2 = sum(lineage %like% "B\\.1\\.617\\.2"),
-               B.1.617.3 = sum(lineage %like% "B\\.1\\.617\\.3")), keyby = sample_date]
-fwrite(cog, "COG_UK_out.csv")
+if(!exists("data_proportion")){
+    
+  cog0 = fread(paste0(data_path,"cog_metadata.csv"))[country == "UK" & pillar_2 == TRUE]
+  cog = cog0[, .(.N,
+                 B.1.617.1 = sum(lineage %like% "B\\.1\\.617\\.1"),
+                 B.1.617.2 = sum(lineage %like% "B\\.1\\.617\\.2"),
+                 B.1.617.3 = sum(lineage %like% "B\\.1\\.617\\.3")), keyby = sample_date]
+  fwrite(cog, paste0(data_path,"COG_UK_out.csv"))
+  
+  data_proportion <- read_csv(paste0(data_path,"COG_UK_out.csv"))
 
-data_proportion <- read_csv(paste0(data_path,"COG_UK_out.csv"))
-data_india <- read_tsv(paste0(data_path,"outbreakinfo_mutation_report_data_2021-05-18.tsv"))
+}
+
+data_india <- read_tsv(paste0(data_path,"outbreakinfo_mutation_report_data.tsv"))
+
 
 traveller_cases0 <- read_csv("data/voc_imports_2021_05_13.csv") # Read in from repo
 

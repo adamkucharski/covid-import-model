@@ -1,7 +1,5 @@
 # Plot data ---------------------------------------------------------------
 
-rr_store <- read_csv(paste0("outputs/fit",kk_pick,".csv"))
-
 par(mfrow=c(2,4),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
 
 x_range <- c(as.Date("2021-03-01"),max(all_uk$date)+25)
@@ -11,15 +9,7 @@ col2b <- rgb(0,0.2,1,0.2)
 col2_grey <- rgb(0,0,0,0.2)
 col2_green <- rgb(0,0.7,0,0.2)
 
-btsp <- 100 # Bootstrap sample
-
-# Extract parameter range
-# mle = mle_val, r95_rr = range_95_rr, r95_dec = range_95_decline, r95_imp = range_95_imp
-
-# XX NEED TO UPDATE
-# mle_r <- output_mle$mle[1]
-# range_95 <- output_mle$r95_rr
-# rr_est <- paste0(mle_r," (95% CI:",range_95[1],"-",range_95[2],")")
+btsp <- 100 # Bootstrap sample for reporting plots
 
 # Extrace values of interest
 pred_interval <- output1$traj
@@ -239,14 +229,6 @@ for(ii in 1:3){
   
 }
  title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
-
-# plot(rr_store$X1,rr_store$X2,xlim=c(min(rr_range),1.9),ylim=c(-220,-130),xlab="R",ylab="lik",main=paste0("R=", rr_est,", k=",kk_pick,""))
-# lines(xx_list,preds$fit)
-# lines(c(mle_val,mle_val),c(-1e3,0),lty=2)
-# lines(c(range_95[1],range_95[1]),c(-1e3,0),lty=3)
-# lines(c(range_95[2],range_95[2]),c(-1e3,0),lty=3)
-# 
-# title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # Output plots
 dev.copy(png,paste0("outputs/plot_",iiM,".png"),units="cm",width=30,height=15,res=200)

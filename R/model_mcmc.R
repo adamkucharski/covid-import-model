@@ -9,9 +9,9 @@
 run_transmission_mcmc <- function(MCMC.runs = 10){
 
   multichain <- c(2) # run in parallel
-  #iiM <- 1
+  #iiM <- 2
   
-  # DEBUG  multichain=c(4); MCMC.runs=10; iiM = multichain; prop.risk = F
+  # DEBUG  multichain=c(4); MCMC.runs=10; iiM = multichain
   
   foreach(iiM=multichain) %dopar% {  # Loop over scenarios with parallel MCMC chains
   #for(iiM in multichain){
