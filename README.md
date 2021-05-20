@@ -18,7 +18,7 @@ _Note: this is working repository, so code and data are likely to change over ti
 
 > Specificy local data path with above files stored, e.g. `data_path <- "~/Documents/COVID_data/B_617_2/"`
 
-3. Run data loading and main model script in `scripts/main_run.r`. This calls the following R files:
+3. Main model script in `scripts/main_run.r`, including dependencies and data loading. This calls the following R files:
 
 > `R/load_data.R` - Load data from `covidregionaldata`, COG-UK and India sequences (stored in folder defined above).
 
