@@ -74,7 +74,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   # Estimated India daily B.1.617.2 imports - XX DEBUGGING
   daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
   
-  daily_india <- daily_india_seq + import_f*downweight_imports*all_india$daily_imports*ma_India_variant
+  #daily_india <- daily_india_seq + import_f*downweight_imports*all_india$daily_imports*ma_India_variant
   
   daily_india <- c(daily_india,rep(0,add_days)) # Add more initial points 
   #daily_india <- rpois(length(daily_india),lambda=daily_india) # Add Poisson noise

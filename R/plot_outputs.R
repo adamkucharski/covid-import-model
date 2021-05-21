@@ -68,7 +68,7 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # - - -
 # UK cases
 
-# Extract UK fit data - copy of code from fit_R()
+# Extract UK fit data - some of this now deprecated
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
 ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
@@ -141,7 +141,7 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # (seq_pick$N-seq_pick$B.1.617.2)-pred_interval_1[1,]
 
 # - - -
-# Number India-linked
+# Number B.1.617.2
 
 cvector <- matrix(NA,nrow=btsp,ncol=length(ma_UK_cases_2_a))
 
@@ -152,7 +152,7 @@ for(ii in 1:btsp){
 pred_interval_1 <- apply(cvector,2,c.nume)
 
 
-plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range,ylim=c(0,400),yaxs="i",ylab="Number",xlab="",main="B.1.617.2 sequences in UK")
+plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range,ylim=c(0,500),yaxs="i",ylab="Number",xlab="",main="B.1.617.2 sequences in UK")
 
 date_cut2 <- length(data_proportion$sample_date) # Subtract less reliable data
 date_cut1 <- date_cut2 - 5

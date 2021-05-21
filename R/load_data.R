@@ -3,7 +3,14 @@
 # Load covidregionaldata
 
 if(!exists("all_countries")){
-  all_countries <- get_national_data() # Load data from covidregionaldata (slow)
+  all_india <- get_national_data("india") # Load data from covidregionaldata (slow)
+  all_uk <- get_national_data("uk",source="who") # Load data from covidregionaldata (slow)
+  
+  # Fix missing data in WHO file
+  missing_data <- c(2027,1926,1979)
+  all_uk[all_uk$date==as.Date("2021-05-16"),"cases_new"] <- missing_data[1]
+  all_uk[all_uk$date==as.Date("2021-05-17"),"cases_new"] <- missing_data[2]
+  all_uk[all_uk$date==as.Date("2021-05-18"),"cases_new"] <- missing_data[3]
 }
 
 # - - -
@@ -34,8 +41,9 @@ india_red_list <- as.Date("2021-04-23")
 date_pick <- as.Date("2021-02-01")
 date_uk_fit <- as.Date("2021-04-23")
 
-all_india <- all_countries %>% filter(country == "India", date>date_pick)
-all_uk <- all_countries %>% filter(country == "United Kingdom",date>date_pick)
+all_india <- all_india[1:nrow(all_uk),] # Avoid mismatched lengths
+all_india <- all_india %>% filter(date>date_pick)
+all_uk <- all_uk %>% filter(date>date_pick)
 
 data_proportion <- head(data_proportion,-2) # Remove last 1 days
 #data_proportion$long_dates <- as.Date(data_proportion$long_dates,origin="1970-01-01")
@@ -87,6 +95,8 @@ ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
 # Define parameters
 # serial interval from Rai et al: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7448781/
 theta_f <- list(serial_mean=log(5.4),serial_sd=log(1.5))
+
+#incubation_period <- EpiNow2::get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 
 # Construct table of serial intervals
 t_max <- total_days
