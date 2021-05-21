@@ -7,6 +7,7 @@ library(mgcv)
 library(doMC)
 library(mvtnorm)
 library(data.table)
+#library(EpiNow2)
 
 
 # Set directories

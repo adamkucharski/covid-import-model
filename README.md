@@ -16,7 +16,7 @@ _Note: this is working repository, so code and data are likely to change over ti
 
 	 * Set GitHub directory, e.g. `setwd("~/Documents/GitHub/covid-import-model")`
 
-	 * Specificy local data path with above files stored, e.g. `data_path <- "~/Documents/COVID_data/B_617_2/"`
+	 * Specify local data path with above files stored, e.g. `data_path <- "~/Documents/COVID_data/B_617_2/"`
 
 3. Main model script in `scripts/main_run.r`, including dependencies and data loading. This calls the following R files:
 
