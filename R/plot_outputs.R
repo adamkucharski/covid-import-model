@@ -23,7 +23,8 @@ ma_UK_cases_2 <- output1$mov_average
 # India cases
 
 plot(all_india$date,all_india$cases_new,xlim=x_range,ylim=c(0,5e5),yaxs="i",ylab="cases",xlab="",main="India cases")
-lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 
 letter_ii <- 1
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
@@ -43,7 +44,8 @@ daily_india <- output1$daily_india
 import_CI <- apply(intro_trace_tab,2,c.nume)
 
 plot(long_dates,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated imports/clusters in UK")
-lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
  
 # Estimate for imports
 imp_scale <- c.nume(thetatab[,"imp"])
@@ -92,7 +94,8 @@ pred_interval_1 <- apply(cvector,2,c.nume)
 # Plot data
 plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,6000),yaxs="i",ylab="cases",xlab="",main="UK cases")
 lines(all_uk$date,ma_UK_cases,col="black",lwd=3)
-lines(c(india_red_list,india_red_list),c(0,1e7),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 
 # Plot decline
 lines(long_dates,ma_UK_cases_f1,col="dark green",lty=1,lwd=2)
@@ -127,7 +130,8 @@ date_cut1 <- date_cut2 - 5
 polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("2021-07-01"),data_proportion$sample_date[date_cut1]),c(0,0,1e4,1e4),lty=0,col=col2_grey)
 
 
-lines(c(india_red_list,india_red_list),c(0,1e5),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 points(data_proportion$sample_date,data_proportion$N - data_proportion$B.1.617.2)
 
 lines(long_dates,pred_interval_1[1,],col="dark green",lty=1,lwd=2) # Put nbinom uncertainty
@@ -159,7 +163,8 @@ date_cut1 <- date_cut2 - 5
 polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("2021-07-01"),data_proportion$sample_date[date_cut1]),c(0,0,1e3,1e3),lty=0,col=col2_grey)
 
 
-lines(c(india_red_list,india_red_list),c(0,1e5),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 points(data_proportion$sample_date,data_proportion$B.1.617.2)
 
 lines(long_dates,pred_interval_1[1,],col="red",lty=1,lwd=2) # Put nbinom uncertainty
@@ -173,7 +178,8 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # - - -
 # Proportion India-linked
 plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range,ylim=c(0,0.7),yaxs="i",ylab="Proportion",xlab="",main="Proportion B.1.617.2 in UK")
-lines(c(india_red_list,india_red_list),c(0,1e5),col="grey",lty=2)
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 
 plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
 lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",lty=1)
@@ -197,7 +203,7 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # Plot R estimates
 kk <- iiM
 if(kk==1){xmax <- 3.3; label_x <- c(1,2,3); label_list <- c("Traveller","Contact of traveller","Onwards") }
-if(kk==2){xmax <- 2.3; label_x <- c(1,2); label_list <- c("Traveller","Non-traveller") }
+if(kk==2){xmax <- 3.3; label_x <- c(1,2,3); label_list <- c("Traveller","Non-traveller","Post-VOC") }
 
 plot(c(1:3),-1*c(1:3),xlim=c(0.7,xmax),ylim=c(0,7),xlab="",ylab="R",xaxt="n")
 grid(ny = NULL, nx=NA, col = "lightgray")
@@ -211,13 +217,13 @@ xx <- 4
 store_val <- NULL
 
 for(ii in 1:3){
-  if(ii==1){range_ii <- c.nume.50(thetatab[,1])}
-  if(ii==2){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2])}
-  if(ii==3 & kk==1){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2]*thetatab[,3])}
+  if(ii==1){range_ii <- c.nume.50(thetatab[,"rr"])}
+  if(ii==2){range_ii <- c.nume.50(thetatab[,"rr"]*thetatab[,"r_scale"])}
+  #if(ii==3 & kk==1){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2]*thetatab[,3])}
+  if(ii==3){range_ii <- c.nume.50(thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"])}
   
-  
-  if(ii==1){range_A <- c.text(thetatab[,1])}
-  if(ii==2){range_A <- c.text(thetatab[,1]*thetatab[,2])}
+  if(ii==1){range_A <- c.text(thetatab[,"rr"])}
+  if(ii==2){range_A <- c.text(thetatab[,"rr"]*thetatab[,"r_scale"])}
   store_val <- rbind(store_val,c(ii,range_A))
   
   lines(c(ii,ii),c(range_ii[2],range_ii[5]),col=col2b)
@@ -228,7 +234,7 @@ for(ii in 1:3){
   if(ii>1){points(ii,r_phe_report[["non_travel"]])}
   
 }
- title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
+title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # Output plots
 dev.copy(png,paste0("outputs/plot_",iiM,".png"),units="cm",width=30,height=15,res=200)
@@ -237,18 +243,20 @@ dev.off()
 # Plot posteriors ---------------------------------------------------------
 
 plot_post <- function(){
-  par(mfcol=c(3,2),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
+  par(mfcol=c(4,2),mar=c(3,3,1,1),mgp=c(2,0.6,0),las=0)
   
   
   # Plot likelihood
   plot(sim_likOut,type="l")
   
-  hist(thetatab[,1],main="R traveller")
-  hist(thetatab[,1]*thetatab[,2],main="R second")
-  hist(thetatab[,1]*thetatab[,3],main="R onwards")
-  hist(thetatab[,4],main="decline")
+  hist(thetatab[,"rr"],main="R traveller")
+  hist(thetatab[,"rr"]*thetatab[,"r_scale"],main="R second")
+  hist(thetatab[,"rr"]*thetatab[,"r_scale_2"],main="R onwards")
+  hist(thetatab[,"decline"],main="decline")
   #hist(thetatab[,5]-1,main="dt_decline")
-  hist(thetatab[,6],main="imports")
+  hist(thetatab[,"imp"],main="imports")
+  hist(thetatab[,"rep_vol"],main="rep vol 2")
+  hist(thetatab[,"surge_scale"],main="post-VOC surge")
   
   # Output plots
   dev.copy(png,paste0("outputs/posterior_",iiM,".png"),units="cm",width=20,height=15,res=200)

@@ -31,7 +31,9 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
             decline = thetaR_IC$decline,
             dt_decline = thetaR_IC$dt_decline,
             imp = thetaR_IC$imp,
-            rep_vol = thetaR_IC$rep_vol
+            rep_vol = thetaR_IC$rep_vol,
+            rep_vol_seq = thetaR_IC$rep_vol_seq,
+            surge_scale = thetaR_IC$surge_scale
             )
   
   

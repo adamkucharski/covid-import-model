@@ -7,7 +7,6 @@ library(mgcv)
 library(doMC)
 library(mvtnorm)
 library(data.table)
-#library(EpiNow2)
 
 
 # Set directories
@@ -33,7 +32,7 @@ cap_outbreak_size <- 1e4 # Cap simulations to prevent runaway epidemics
 priorScale <- function(x){ifelse(abs(x)<=1,1,0)} # Prior on relative R values for non-travellers
 
 # Fit model
-run_transmission_mcmc(MCMC.runs = 1e5) # Specify number of MCMC iterations: >1e5 recommended
+run_transmission_mcmc(MCMC.runs = 3e4) # Specify number of MCMC iterations: >1e5 recommended
 
 # Simulate & plot outputs  -------------------------------------------------------------
 

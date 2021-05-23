@@ -24,10 +24,10 @@ if(!exists("data_proportion")){
                  B.1.617.2 = sum(lineage %like% "B\\.1\\.617\\.2"),
                  B.1.617.3 = sum(lineage %like% "B\\.1\\.617\\.3")), keyby = sample_date]
   fwrite(cog, paste0(data_path,"COG_UK_out.csv"))
-  
-  data_proportion <- read_csv(paste0(data_path,"COG_UK_out.csv"))
 
 }
+
+data_proportion <- read_csv(paste0(data_path,"COG_UK_out.csv"))
 
 data_india <- read_tsv("data/outbreakinfo_mutation_report_data.tsv")
 
@@ -71,7 +71,7 @@ all_india <- all_india %>% mutate(daily_imports = travel_multiplier*cases_new)
 # Downweight recent imports based on incubation period (from McAloon et al. 2020)
 red_list_point <- as.numeric(india_red_list-date_pick)
 total_days <- length(all_india$date)
-downweight_imports <- c(rep(1,red_list_point),1-plnorm(1:(total_days-red_list_point),mean=log(5.1),sd=log(1.65)) )
+downweight_imports <- c(rep(1,red_list_point),1-plnorm(1:(total_days-red_list_point),mean=log(5.06),sd=0.418) )
 
 # Format data
 ma_India_variant0 <- ma(data_india$B.1.617.2,7) # Moving average of UK cases
@@ -94,7 +94,7 @@ ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
 
 # Define parameters
 # serial interval from Rai et al: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7448781/
-theta_f <- list(serial_mean=log(5.4),serial_sd=log(1.5))
+theta_f <- list(serial_mean=log(5.4),serial_sd=0.4)
 
 #incubation_period <- EpiNow2::get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 
@@ -107,6 +107,12 @@ for(ii in 1:t_max){
 serial_mat0 <- serial_mat0[,1:total_days]
 
 #Estimates from PHE report (Table 9)
-r_phe_report <- c(travel = 128/(250*0.724),non_travel = 98/(287*0.805))
+#r_phe_report <- c(travel = 128/(250*0.724),non_travel = 98/(287*0.805)) # Report 11
+r_phe_report <- c(travel = 135/(331*0.704),non_travel = 245/(698*0.818)) # Report 12
+
+# Variant of concern date (UK - 7th May)
+voc_date <- as.Date("2021-05-07")
+
+
 
 

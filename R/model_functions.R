@@ -70,8 +70,10 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   daily_decline <- theta[["decline"]]
   dt_decline <- 1 #theta[["dt_decline"]] # Scale rate of change
   rep_vol <- theta[["rep_vol"]]
+  rep_vol_seq <- theta[["rep_vol_seq"]]
+  surge_scale <- theta[["surge_scale"]]
   
-  # Estimated India daily B.1.617.2 imports - XX DEBUGGING
+  # Estimated India daily B.1.617.2 imports 
   daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
   
   #daily_india <- daily_india_seq + import_f*downweight_imports*all_india$daily_imports*ma_India_variant
@@ -99,6 +101,9 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   # Extract UK fit data
   ma_UK_cases_2 <- decline_f(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_fit)
   
+  # Get VOC date
+  voc_pick <- which(long_dates>voc_date) %>% min()
+  
   # Store_values
   store_vals <- rep(0,t_max)
 
@@ -106,14 +111,15 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   serial_mat2 <- serial_mat*daily_india*r_pick
   store_vals1 <- store_vals + colSums(serial_mat2)
   
-  # Add onwards transmission from first genertion - exclude travellers for now to avoid double counting
+  # Add onwards transmission from first genertion - exclude travellers here to avoid double counting
   serial_mat2 <- serial_mat*store_vals1*r_pick*r_scale
   store_vals <- store_vals + colSums(serial_mat2)
   
-  
   # Add onwards transmission from subsequent generations - reduces twice
   for(ii in 1:t_max){
-    store_vals <- store_vals + store_vals[ii]*serial_mat[ii,]*r_pick*r_scale*r_scale_2
+    if(ii<voc_pick){r_pick_c <- r_pick} # Include possible effect of VOC measures
+    if(ii>=voc_pick){r_pick_c <- r_pick*surge_scale} # Include possible effect of VOC measures
+    store_vals <- store_vals + store_vals[ii]*serial_mat[ii,]*r_pick_c*r_scale*r_scale_2
   }
   
   store_vals <- daily_india + store_vals1 + store_vals # Add imports + first generation to avoid double counting
@@ -141,7 +147,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   #
   # - - 
   # Calculate likelihood on 617.2
-  log_L_b <- dnbinom(actual_617,mu=(expected_6172*data_fit1$N/expected_cases),size=1/rep_vol,log=T)
+  log_L_b <- dnbinom(actual_617,mu=(expected_6172*data_fit1$N/expected_cases),size=1/rep_vol_seq,log=T)
 
   log_L_b_sum <- log_L_b[!is.na(log_L_b)] %>% sum()
   
