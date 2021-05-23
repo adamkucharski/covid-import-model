@@ -29,7 +29,7 @@ if(!exists("data_proportion")){
 
 }
 
-data_india <- read_tsv(paste0(data_path,"outbreakinfo_mutation_report_data.tsv"))
+data_india <- read_tsv("data/outbreakinfo_mutation_report_data.tsv")
 
 
 traveller_cases0 <- read_csv("data/voc_imports_2021_05_13.csv") # Read in from repo

@@ -6,11 +6,7 @@ _Note: this is working repository, so code and data are likely to change over ti
 
 ### Quick start guide
 
-1. Get required data files from COG-UK and India from GISAID via outbreak.data and place in a local folder:
-
-	 * Download [cog_metadata.csv](https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv)
-
-	 * Download `outbreakinfo_mutation_report_data_[date].tsv` from the lineage prevalence visualisation [here](https://outbreak.info/location-reports?loc=IND) and rename as `outbreakinfo_mutation_report_data.tsv`
+1. Get required data file from COG-UK and place in a local folder: Download [cog_metadata.csv](https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv)
 
 2. Define file paths:
 
@@ -30,6 +26,7 @@ _Note: this is working repository, so code and data are likely to change over ti
 
 	> `R/plot_outputs.R` - Plot data, parameter estimates and model simulations.
 
+The model also calls `outbreakinfo_mutation_report_data.tsv`, downloaded on 21st May from the lineage prevalence visualisation [here at outbreak.info](https://outbreak.info/location-reports?loc=IND).
 
 ### Archived code
 
@@ -37,4 +34,6 @@ An MLE framework used to implement an earlier version of this analysis is archiv
 
 ### Citation
 
-Reference for initial version of the analysis: [report 1 citation to come]. If you plan to build on or cite this preliminary analysis for an academic publication, please ensure that you credit the underlying data sources above appropriately.
+Reference for initial version of the analysis: [Kucharski et al, CMMID Working Group Report, 12 May 2021](https://www.gov.uk/government/publications/cmmid-covid-19-working-group-modelling-importations-and-local-transmission-of-b16172-in-the-uk-12-may-2021?utm_medium=email&utm_campaign=govuk-notifications&utm_source=44bb4abd-fb1b-42db-b903-08d94dfe0090&utm_content=immediately).
+
+If you plan to build on or cite this preliminary analysis for an academic publication, please ensure that you credit the underlying data sources above appropriately.
