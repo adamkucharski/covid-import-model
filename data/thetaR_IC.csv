@@ -1,2 +1,2 @@
-rr,r_scale,r_scale_2,decline,dt_decline,imp,rep_vol,rep_vol_seq,surge_scale
-1.5,1,1,0.02,1,1,0.1,0.1,1
+rr,r_scale,r_scale_2,decline,dt_decline,imp,rep_vol,rep_vol_seq,surge_scale,surge_time
+1.5,1,1,0.02,1,1,0.1,0.1,1,100

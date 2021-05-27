@@ -72,6 +72,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   rep_vol <- theta[["rep_vol"]]
   rep_vol_seq <- theta[["rep_vol_seq"]]
   surge_scale <- theta[["surge_scale"]]
+  surge_time <- theta[["surge_time"]]
   
   # Estimated India daily B.1.617.2 imports 
   daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
@@ -101,8 +102,9 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   # Extract UK fit data
   ma_UK_cases_2 <- decline_f(total_days_uk,t_max,daily_decline,dt_decline,ma_UK_cases_fit)
   
-  # Get VOC date
-  voc_pick <- which(long_dates>voc_date) %>% min()
+  # Get VOC date - or extract while fitting
+  #voc_pick <- which(long_dates>voc_date) %>% min()
+  voc_pick <- surge_time
   
   # Store_values
   store_vals <- rep(0,t_max)
@@ -152,7 +154,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   log_L_b_sum <- log_L_b[!is.na(log_L_b)] %>% sum()
   
   # Calculate likelihood of overall cases
-  pick_fit <- all_uk$date>as.Date("2021-04-01") # Only from April 1st 2021
+  pick_fit <- all_uk$date>fit_date # Only from April 1st 2021
   
   log_L_p <- dnbinom(all_uk$cases_new,mu=(mean_val+ma_UK_cases_2),size=1/rep_vol,log=T)
 

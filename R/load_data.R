@@ -32,7 +32,9 @@ data_proportion <- read_csv(paste0(data_path,"COG_UK_out.csv"))
 data_india <- read_tsv("data/outbreakinfo_mutation_report_data.tsv")
 
 
-traveller_cases0 <- read_csv("data/voc_imports_2021_05_13.csv") # Read in from repo
+traveller_cases0 <- read_csv("data/voc_imports_2021_05_24.csv") # Read in from repo
+traveller_cases_617_1 <- read_csv("data/vui_617_1_imports_2021_05_24.csv") # Read in from repo
+
 
 # - - -
 # Load variant data
@@ -41,9 +43,11 @@ india_red_list <- as.Date("2021-04-23")
 date_pick <- as.Date("2021-02-01")
 date_uk_fit <- as.Date("2021-04-23")
 
+fit_date <- as.Date("2021-04-01") # Specify date to fit from
+
 all_india <- all_india[1:nrow(all_uk),] # Avoid mismatched lengths
-all_india <- all_india %>% filter(date>date_pick)
-all_uk <- all_uk %>% filter(date>date_pick)
+all_india <- all_india %>% filter(date>=date_pick)
+all_uk <- all_uk %>% filter(date>=date_pick)
 
 data_proportion <- head(data_proportion,-2) # Remove last 1 days
 #data_proportion$long_dates <- as.Date(data_proportion$long_dates,origin="1970-01-01")
@@ -56,6 +60,8 @@ data_india <- data_india %>% filter(date_time>date_pick)
 # Imported cases
 traveller_cases0 <- traveller_cases0 %>% filter(`Travel Indicator` == "Traveller")
 traveller_cases <- traveller_cases0 #head(traveller_cases0,-5)
+
+
 
 daily_india_seq <- 0*all_india$cases_new # Imports based on traveller cases
 daily_india_seq[match(traveller_cases0$Date,all_india$date)] <- traveller_cases0$Number_B_1_617_2
@@ -86,7 +92,7 @@ ma_UK_cases <- ma(all_uk$cases_new,7) # Moving average of UK cases
 data_fit <- data_proportion[match(all_uk$date,data_proportion$sample_date),]
 t_fit <- nrow(data_fit)
 
-# Set up for fitting
+# Set up for extrapolation
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
 ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
@@ -112,6 +118,9 @@ r_phe_report <- c(travel = 135/(331*0.704),non_travel = 245/(698*0.818)) # Repor
 
 # Variant of concern date (UK - 7th May)
 voc_date <- as.Date("2021-05-07")
+
+voc_n <- as.numeric(voc_date - min(all_uk$date) +1)
+
 
 
 

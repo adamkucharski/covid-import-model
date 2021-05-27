@@ -30,9 +30,10 @@ source("R/model_mcmc.R")
 # Define parameters
 cap_outbreak_size <- 1e4 # Cap simulations to prevent runaway epidemics
 priorScale <- function(x){ifelse(abs(x)<=1,1,0)} # Prior on relative R values for non-travellers
+priorTime <- function(x){ifelse(x< total_days,1,0)} # Prior on timing of surge effect
 
 # Fit model
-run_transmission_mcmc(MCMC.runs = 1e5) # Specify number of MCMC iterations: >1e5 recommended
+run_transmission_mcmc(MCMC.runs = 1e4) # Specify number of MCMC iterations: >1e5 recommended
 
 # Simulate & plot outputs  -------------------------------------------------------------
 
