@@ -1,0 +1,9 @@
+region,parameter,value
+North East and Yorkshire,R_traveller,15 (95% CrI: 3.5-44)
+North East and Yorkshire,R_non_traveller,1.8 (95% CrI: 1.6-2)
+North East and Yorkshire,R_recent,1.6 (95% CrI: 1.2-1.8)
+North East and Yorkshire,R_non_17,0.97 (95% CrI: 0.96-0.98)
+North East and Yorkshire,ratio_617_2,1.8 (95% CrI: 1.6-2)
+North East and Yorkshire,ratio_617_2_recent,1.6 (95% CrI: 1.2-1.9)
+North East and Yorkshire,decline,9.5 (95% CrI: 0.41-35)
+North East and Yorkshire,decline_date,2021-05-16 (95% CrI:2021-04-26 - 2021-05-23)

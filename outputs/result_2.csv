@@ -1,0 +1,9 @@
+region,parameter,value
+Midlands,R_traveller,1.9 (95% CrI: 1.4-4.8)
+Midlands,R_non_traveller,1.4 (95% CrI: 1.3-1.6)
+Midlands,R_recent,1.3 (95% CrI: 0.73-1.4)
+Midlands,R_non_17,0.97 (95% CrI: 0.96-0.97)
+Midlands,ratio_617_2,1.5 (95% CrI: 1.3-1.7)
+Midlands,ratio_617_2_recent,1.4 (95% CrI: 0.75-1.5)
+Midlands,decline,7.2 (95% CrI: 0.28-47)
+Midlands,decline_date,2021-05-13 (95% CrI:2021-04-26 - 2021-05-23)

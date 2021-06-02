@@ -11,7 +11,7 @@ col2b <- rgb(0,0.2,1,0.2)
 col2_grey <- rgb(0,0,0,0.2)
 col2_green <- rgb(0,0.7,0,0.2)
 
-btsp <- 500 # Bootstrap sample for reporting plots
+btsp <- 100 # Bootstrap sample for reporting plots
 
 # Extrace values of interest
 pred_interval <- output1$traj
@@ -40,17 +40,18 @@ lines(all_india$date,ma_India_variant,lwd=2)
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # - - -
-# India imports
+# Imported cases ----------------------------------------------------------
+  
 daily_india <- output1$daily_india
 
 import_CI <- apply(intro_trace_tab,2,c.nume)
 
-plot(long_dates,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated UK imports/clusters")
+plot(long_dates,-1+0*daily_india,xlim=x_range,type="l",ylim=c(0,100),yaxs="i",ylab="cases",xlab="",main="Estimated imports/clusters")
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 
 
 # PHE data
-points(traveller_cases$Date,traveller_cases$Number_B_1_617_2)
+#points(traveller_cases$Date,traveller_cases$Number_B_1_617_2)
 
 # Estimate for imports
 imp_scale <- c.nume(thetatab[,"imp"])
@@ -83,6 +84,8 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # UK cases
 
 # Extract UK fit data - some of this now deprecated
+if(local_run==T){y_max <- 1e3}else{y_max <- 6000}
+
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
 ma_UK_cases_fit <- ma(all_uk_fit$cases_new,7)
@@ -104,7 +107,7 @@ for(ii in 1:btsp){
 pred_interval_1 <- apply(cvector,2,c.nume)
 
 # Plot data
-plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,6000),yaxs="i",ylab="cases",xlab="",main="UK cases")
+plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,y_max),yaxs="i",ylab="cases",xlab="",main=paste0(location_ID," cases"))
 lines(all_uk$date,ma_UK_cases,col="black",lwd=3)
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
@@ -125,6 +128,13 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 doubling_time2 <- doubling_est2(pred_interval[1,long_dates>=as.Date("2021-05-11")])
 
 # Number non_B117
+if(local_run==T){
+    y_max <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$N)
+    y_max2 <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$B.1.617.2)
+  }else{
+    y_max <- 1e3
+    y_max2 <- 1e3
+  }
 
 cvector <- matrix(NA,nrow=btsp,ncol=length(ma_UK_cases_2_a))
 
@@ -135,7 +145,7 @@ for(ii in 1:btsp){
 pred_interval_1 <- apply(cvector,2,c.nume)
 
 
-plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range2,ylim=c(0,1e3),yaxs="i",ylab="Number",xlab="",main="Non-B.1.617.2 in COG-UK")
+plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range2,ylim=c(0,y_max),yaxs="i",ylab="Number",xlab="",main="Non-B.1.617.2 in COG-UK")
 
 date_cut2 <- length(data_proportion$sample_date) # Subtract less reliable data
 date_cut1 <- date_cut2 - 5
@@ -149,7 +159,7 @@ lines(long_dates,pred_interval_1[1,],col="dark green",lty=1,lwd=2) # Put nbinom 
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_1[2,],rev(pred_interval_1[3,])),lty=0,col=col2_green)
 points(data_proportion$sample_date,data_proportion$N - data_proportion$B.1.617.2)
 
-text(x=tail(data_proportion$sample_date,1),y=1e3*0.95,labels="Subject to delay",col=rgb(0.4,0.4,0.4),cex=0.8,adj=0)
+text(x=tail(data_proportion$sample_date,1),y=y_max*0.95,labels="Subject to delay",col=rgb(0.4,0.4,0.4),cex=0.8,adj=0)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
@@ -168,7 +178,7 @@ for(ii in 1:btsp){
 pred_interval_1 <- apply(cvector,2,c.nume)
 
 
-plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range2,ylim=c(0,1e3),yaxs="i",ylab="Number",xlab="",main="B.1.617.2 in COG-UK")
+plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range2,ylim=c(0,y_max2),yaxs="i",ylab="Number",xlab="",main="B.1.617.2 in COG-UK")
 
 date_cut2 <- length(data_proportion$sample_date) # Subtract less reliable data
 date_cut1 <- date_cut2 - 5
@@ -182,16 +192,13 @@ lines(long_dates,pred_interval_1[1,],col="red",lty=1,lwd=2) # Put nbinom uncerta
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_1[2,],rev(pred_interval_1[3,])),lty=0,col=col2a)
 points(data_proportion$sample_date,data_proportion$B.1.617.2)
 
-text(x=tail(data_proportion$sample_date,1),y=1e3*0.95,labels="Subject to delay",col=rgb(0.4,0.4,0.4),cex=0.8,adj=0)
+text(x=tail(data_proportion$sample_date,1),y=y_max2*0.95,labels="Subject to delay",col=rgb(0.4,0.4,0.4),cex=0.8,adj=0)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 
 
-
-
-# - - -
-# Proportion India-linked
+# Proportion 617.2 ------------------------------------------------
 
 cvector <- matrix(NA,nrow=btsp,ncol=length(ma_UK_cases_2))
 
@@ -206,11 +213,13 @@ cvector[is.na(cvector)] <- -1 # Remove NA points from plot
 pred_interval_prop <- apply(cvector,2,c.nume)
 
 
-plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range2,ylim=c(0,0.7),yaxs="i",ylab="Proportion",xlab="",main="Proportion B.1.617.2 in UK")
+plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range2,ylim=c(0,1),yaxs="i",ylab="Proportion",xlab="",main=paste0("Proportion B.1.617.2 in ",location_ID))
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
 
-plot_CI(data_proportion$sample_date,data_proportion$B.1.617.2,data_proportion$N)
+data_proportion_plot <- data_proportion[!is.na(data_proportion$B.1.617.2),]
+
+plot_CI(data_proportion_plot$sample_date,data_proportion_plot$B.1.617.2,data_proportion_plot$N)
 #lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",lty=1)
 
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_prop[2,],rev(pred_interval_prop[3,])),lty=0,col=col2b)
@@ -289,7 +298,7 @@ for(ii in 1:3){
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # Output plots
-dev.copy(png,paste0("outputs/plot_",iiM,".png"),units="cm",width=20,height=15,res=200)
+dev.copy(png,paste0("outputs/plot_",local_nn,".png"),units="cm",width=20,height=15,res=200)
 dev.off()
 
 # Plot posteriors ---------------------------------------------------------
@@ -384,11 +393,26 @@ compare_R_fits <- function(){
 # dev.off()
 
 # Output R estimates
-print(store_val)
+print(store_val[,2])
 print(c.text(100*(1-thetatab[,"surge_scale"])))
 
-print(fit_date + round(c.nume(thetatab[,"surge_time"])) + 1) # Output switch date
+r_non_617 <- exp(-thetatab[,"decline"]*theta_f[["serial_mean"]])
+r_617_2 <- thetatab[,"rr"]*thetatab[,"r_scale"]
+r_617_2_recent <- thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]
 
+surge_drop <- date_pick + round(c.nume(thetatab[,"surge_time"])) + 1
+
+# Output summary for that location
+output_text <- cbind(rep(local_pick,8), c("R_traveller","R_non_traveller","R_recent","R_non_17","ratio_617_2","ratio_617_2_recent","decline","decline_date"),c(
+                  store_val[,2],
+                  c.text(r_non_617),
+                  c.text(r_617_2/r_non_617),
+                  c.text(r_617_2_recent/r_non_617),
+                  c.text(100*(1-thetatab[,"surge_scale"])),
+                  paste0(surge_drop[1]," (95% CrI:",surge_drop[2]," - ",surge_drop[3],")"))
+)
+output_text <- data.frame(output_text); names(output_text) <- c("region","parameter","value")
+write_csv(output_text,paste0("outputs/result_",local_nn,".csv"))
 
 
 

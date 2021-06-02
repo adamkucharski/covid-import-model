@@ -1,0 +1,9 @@
+region,parameter,value
+North West,R_traveller,2.3 (95% CrI: 2-3.4)
+North West,R_non_traveller,2 (95% CrI: 1.9-2.1)
+North West,R_recent,1.5 (95% CrI: 1.4-1.6)
+North West,R_non_17,0.97 (95% CrI: 0.95-0.98)
+North West,ratio_617_2,2.1 (95% CrI: 2-2.2)
+North West,ratio_617_2_recent,1.6 (95% CrI: 1.4-1.7)
+North West,decline,26 (95% CrI: 17-33)
+North West,decline_date,2021-05-08 (95% CrI:2021-05-05 - 2021-05-12)

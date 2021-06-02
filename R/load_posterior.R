@@ -3,7 +3,7 @@ c_trace_tab0=NULL
 intro_trace_tab0=NULL
 
 # Load values
-load(paste("outputs/outputR",iiM,".RData",sep=""))
+load(paste("outputs/outputR",local_nn,".RData",sep=""))
 thetatab=cbind(data.frame(thetatab))
 
 # Remove burn-in

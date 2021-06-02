@@ -1,0 +1,9 @@
+region,parameter,value
+London,R_traveller,1.5 (95% CrI: 1.3-2)
+London,R_non_traveller,1.3 (95% CrI: 1.3-1.4)
+London,R_recent,1.3 (95% CrI: 1.2-1.4)
+London,R_non_17,0.92 (95% CrI: 0.89-0.94)
+London,ratio_617_2,1.5 (95% CrI: 1.4-1.5)
+London,ratio_617_2_recent,1.4 (95% CrI: 1.3-1.5)
+London,decline,2.2 (95% CrI: 0.074-12)
+London,decline_date,2021-05-09 (95% CrI:2021-04-25 - 2021-05-23)

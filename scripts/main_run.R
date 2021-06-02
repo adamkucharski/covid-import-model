@@ -10,12 +10,14 @@ library(data.table)
 
 
 # Set directories
-# setwd("~/Documents/GitHub/covid-import-model")
-# data_path <- "~/Documents/COVID_data/B_617_2/"
+setwd("~/Documents/GitHub/covid-import-model")
+data_path <- "~/Documents/COVID_data/B_617_2/"
 
 registerDoMC(4)  #change to your number of CPU cores
 
 # Load data ----------------------------------------------
+local_run <- F
+location_ID <- "UK"
 
 source("R/load_data.R") # Load and format remaining data
 
@@ -33,7 +35,7 @@ priorScale <- function(x){ifelse(abs(x)<=1,1,0)} # Prior on relative R values fo
 priorTime <- function(x){ifelse(x< total_days,1,0)} # Prior on timing of surge effect
 
 # Fit model
-run_transmission_mcmc(MCMC.runs = 1e4) # Specify number of MCMC iterations: >1e5 recommended
+run_transmission_mcmc(MCMC.runs = 5e4) # Specify number of MCMC iterations: >1e5 recommended
 
 # Simulate & plot outputs  -------------------------------------------------------------
 

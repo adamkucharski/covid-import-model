@@ -13,8 +13,8 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
   
   # DEBUG  multichain=c(4); MCMC.runs=10; iiM = multichain
   
-  foreach(iiM=multichain) %dopar% {  # Loop over scenarios with parallel MCMC chains
-  #for(iiM in multichain){
+  #foreach(iiM=multichain) %dopar% {  # Loop over scenarios with parallel MCMC chains
+  for(iiM in multichain){
 
   # - - - - - - - - - - - 
   # Load relevant data
@@ -131,7 +131,7 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
     
     if(m %% min(MCMC.runs,1000) == 0){
       print(c(m,accept_rate,sim_liktab[m],epsilon0))
-      save(sim_liktab,accepttab,c_trace_tab,intro_trace_tab,thetatab,file=paste("outputs/outputR",iiM,".RData",sep=""))
+      save(sim_liktab,accepttab,c_trace_tab,intro_trace_tab,thetatab,file=paste("outputs/outputR",local_nn,".RData",sep=""))
     }
     
   } # End MCMC run
