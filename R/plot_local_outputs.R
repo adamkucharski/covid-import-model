@@ -20,7 +20,7 @@ write_csv(output_A,"outputs/Table_R_outputs.csv")
 
 # Table 2
 
-store_loc0 <- store_loc %>% filter(parameter=="ratio_617_2" | parameter=="ratio_617_2_recent") 
+store_loc0 <- store_loc %>% filter(parameter=="ratio_617_2_recent" | parameter=="ratio_617_2_end") 
 
 output_A <- store_loc0 %>% pivot_wider(names_from = parameter, values_from = value)
 
@@ -33,6 +33,14 @@ store_loc0 <- store_loc %>% filter(parameter=="decline" | parameter=="decline_da
 output_A <- store_loc0 %>% pivot_wider(names_from = parameter, values_from = value)
 
 write_csv(output_A,"outputs/Table_decline.csv")
+
+# Table 4
+
+store_loc0 <- store_loc %>% filter(parameter=="doubling" | parameter=="surge_report") 
+
+output_A <- store_loc0 %>% pivot_wider(names_from = parameter, values_from = value)
+
+write_csv(output_A,"outputs/Table_report.csv")
 
 
 # Output summary for that location

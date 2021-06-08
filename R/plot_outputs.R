@@ -11,7 +11,7 @@ col2b <- rgb(0,0.2,1,0.2)
 col2_grey <- rgb(0,0,0,0.2)
 col2_green <- rgb(0,0.7,0,0.2)
 
-btsp <- 100 # Bootstrap sample for reporting plots
+btsp <- 200 # Bootstrap sample for reporting plots
 
 # Extrace values of interest
 pred_interval <- output1$traj
@@ -84,7 +84,7 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # UK cases
 
 # Extract UK fit data - some of this now deprecated
-if(local_run==T){y_max <- 1e3}else{y_max <- 6000}
+if(local_run==T){y_max <- 2e3}else{y_max <- 6000}
 
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
@@ -111,6 +111,7 @@ plot(all_uk$date,all_uk$cases_new,xlim=x_range,ylim=c(0,y_max),yaxs="i",ylab="ca
 lines(all_uk$date,ma_UK_cases,col="black",lwd=3)
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 # Plot decline
 lines(long_dates,ma_UK_cases_f1,col="dark green",lty=1,lwd=2)
@@ -154,6 +155,7 @@ polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("
 
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 lines(long_dates,pred_interval_1[1,],col="dark green",lty=1,lwd=2) # Put nbinom uncertainty
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_1[2,],rev(pred_interval_1[3,])),lty=0,col=col2_green)
@@ -187,6 +189,7 @@ polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("
 
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 lines(long_dates,pred_interval_1[1,],col="red",lty=1,lwd=2) # Put nbinom uncertainty
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_1[2,],rev(pred_interval_1[3,])),lty=0,col=col2a)
@@ -216,6 +219,7 @@ pred_interval_prop <- apply(cvector,2,c.nume)
 plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range2,ylim=c(0,1),yaxs="i",ylab="Proportion",xlab="",main=paste0("Proportion B.1.617.2 in ",location_ID))
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 data_proportion_plot <- data_proportion[!is.na(data_proportion$B.1.617.2),]
 
@@ -228,8 +232,8 @@ lines(long_dates,pred_interval_prop[1,],col="blue",lty=1)
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 
-# - - 
-# Plot change in R over time
+# Plot R trajectory --------------------------------------------------------
+
 
 cvector <- matrix(NA,nrow=btsp,ncol=t_max)
 
@@ -237,10 +241,12 @@ for(ii in 1:btsp){
   pick_n <- sample(1:nrow(thetatab),1) # Get bootstrap
   r_base <- thetatab[pick_n,"rr"]*thetatab[pick_n,"r_scale"]
   r_surge <- thetatab[pick_n,"rr"]*thetatab[pick_n,"r_scale"]*thetatab[pick_n,"surge_scale"]
-  mid_point <- thetatab[pick_n,"surge_time"] %>% round() # Extract midpoint
+  r_end <- thetatab[pick_n,"rr"]*thetatab[pick_n,"r_scale"]*thetatab[pick_n,"surge_scale"]*thetatab[pick_n,"end_scale"]
+  mid_point <- thetatab[pick_n,"surge_time"] %>% round() # Extract midpoint 1
+  mid_point_2 <- thetatab[pick_n,"end_time"] %>% round() # Extract midpoint 2
   if(mid_point>=length(all_uk$date)){r_time <- rep(r_base,t_max) }
   if(mid_point<length(all_uk$date)){
-    r_time <- c(rep(r_base,mid_point),rep(r_surge,t_max-mid_point))
+    r_time <- c(rep(r_base,mid_point),rep(r_surge,mid_point_2-mid_point),rep(r_end,t_max-mid_point_2))
     }
   
   cvector[ii,]= r_time
@@ -252,6 +258,7 @@ plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range2,ylim=c(0,4),yaxs="i",ylab="R",xl
 grid(ny = NULL, nx=NA, col = "lightgray")
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
 lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 polygon(c(long_dates,rev(long_dates)),c(pred_interval_r_surge[2,],rev(pred_interval_r_surge[5,])),lty=0,col=col2b)
 #polygon(c(long_dates,rev(long_dates)),c(pred_interval_r_surge[3,],rev(pred_interval_r_surge[4,])),lty=0,col=col2b)
@@ -259,13 +266,13 @@ lines(long_dates,pred_interval_r_surge[1,],col="blue",lty=1)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
-# - - 
-# Plot R estimates
+# Plot R estimates --------------------------------------------------------
+
 kk <- iiM
 if(kk==1){xmax <- 3.3; label_x <- c(1,2,3); label_list <- c("Traveller","Contact of traveller","Onwards") }
-if(kk==2){xmax <- 3.3; label_x <- c(1,2,3); label_list <- c("Traveller","Non-traveller","Recent") }
+if(kk==2){xmax <- 4.3; label_x <- c(1:4); label_list <- c("Travel","Non-travel","Post-7/5","Post-17/5") }
 
-plot(c(1:3),-1*c(1:3),xlim=c(0.7,xmax),ylim=c(0,4),xlab="",ylab="R",xaxt="n")
+plot(c(1:4),-1*c(1:4),xlim=c(0.7,xmax),ylim=c(0,4),xlab="",ylab="R",xaxt="n")
 grid(ny = NULL, nx=NA, col = "lightgray")
 
 #axis(1, at=c(1,2,3,4), labels=c("Traveller","Contact of traveller","Onwards","SPI-M"))
@@ -276,15 +283,17 @@ xx <- 4
 
 store_val <- NULL
 
-for(ii in 1:3){
+for(ii in 1:4){
   if(ii==1){range_ii <- c.nume.50(thetatab[,"rr"])}
   if(ii==2){range_ii <- c.nume.50(thetatab[,"rr"]*thetatab[,"r_scale"])}
   #if(ii==3 & kk==1){range_ii <- c.nume.50(thetatab[,1]*thetatab[,2]*thetatab[,3])}
   if(ii==3){range_ii <- c.nume.50(thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"])}
+  if(ii==4){range_ii <- c.nume.50(thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]*thetatab[,"end_scale"])}
   
   if(ii==1){range_A <- c.text(thetatab[,"rr"])}
   if(ii==2){range_A <- c.text(thetatab[,"rr"]*thetatab[,"r_scale"])}
   if(ii==3){range_A <- c.text(thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"])}
+  if(ii==4){range_A <- c.text(thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]*thetatab[,"end_scale"])}
   store_val <- rbind(store_val,c(ii,range_A))
   
   lines(c(ii,ii),c(range_ii[2],range_ii[5]),col=col2b)
@@ -298,7 +307,7 @@ for(ii in 1:3){
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
 # Output plots
-dev.copy(png,paste0("outputs/plot_",local_nn,".png"),units="cm",width=20,height=15,res=200)
+dev.copy(png,paste0("outputs/plot_",local_nn,".png"),units="cm",width=25,height=15,res=200)
 dev.off()
 
 # Plot posteriors ---------------------------------------------------------
@@ -399,17 +408,21 @@ print(c.text(100*(1-thetatab[,"surge_scale"])))
 r_non_617 <- exp(-thetatab[,"decline"]*theta_f[["serial_mean"]])
 r_617_2 <- thetatab[,"rr"]*thetatab[,"r_scale"]
 r_617_2_recent <- thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]
+r_617_2_end <- thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]*thetatab[,"end_scale"]
 
 surge_drop <- date_pick + round(c.nume(thetatab[,"surge_time"])) + 1
 
 # Output summary for that location
-output_text <- cbind(rep(local_pick,8), c("R_traveller","R_non_traveller","R_recent","R_non_17","ratio_617_2","ratio_617_2_recent","decline","decline_date"),c(
+output_text <- cbind(rep(local_pick,12), c("R_traveller","R_non_traveller","R_p7","R_p17","R_non_617","ratio_617_2","ratio_617_2_recent","ratio_617_2_end","decline","decline_date","doubling","surge_report"),c(
                   store_val[,2],
                   c.text(r_non_617),
-                  c.text(r_617_2/r_non_617),
-                  c.text(r_617_2_recent/r_non_617),
+                  c.text(r_617_2/r_non_617,sigF=3),
+                  c.text(r_617_2_recent/r_non_617,sigF=3),
+                  c.text(r_617_2_end/r_non_617,sigF=3),
                   c.text(100*(1-thetatab[,"surge_scale"])),
-                  paste0(surge_drop[1]," (95% CrI:",surge_drop[2]," - ",surge_drop[3],")"))
+                  paste0(surge_drop[1]," (95% CrI:",surge_drop[2]," - ",surge_drop[3],")"),
+                  signif(doubling_time2,3),
+                  c.text(thetatab[,"rep_scale"]))
 )
 output_text <- data.frame(output_text); names(output_text) <- c("region","parameter","value")
 write_csv(output_text,paste0("outputs/result_",local_nn,".csv"))

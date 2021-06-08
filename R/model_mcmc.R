@@ -31,10 +31,13 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
             decline = thetaR_IC$decline,
             dt_decline = thetaR_IC$dt_decline,
             imp = thetaR_IC$imp,
+            rep_scale = thetaR_IC$rep_scale,
             rep_vol = thetaR_IC$rep_vol,
             rep_vol_seq = thetaR_IC$rep_vol_seq,
             surge_scale = thetaR_IC$surge_scale,
-            surge_time = thetaR_IC$surge_time
+            surge_time = thetaR_IC$surge_time,
+            end_scale = thetaR_IC$end_scale,
+            end_time = thetaR_IC$end_time
             )
   
   
@@ -147,8 +150,8 @@ run_transmission_mcmc <- function(MCMC.runs = 10){
 ComputeProbability<-function(sim_likelihood,sim_likelihood_star,thetatab,theta_star,pmask=NULL){
   
   # Include priors
-  p_theta_star = priorScale(theta_star[["r_scale"]])*priorScale(theta_star[["r_scale_2"]])*priorScale(theta_star[["surge_scale"]])*priorTime(theta_star[["surge_time"]])
-  p_theta = priorScale(thetatab[["r_scale"]])*priorScale(thetatab[["r_scale_2"]])*priorScale(thetatab[["surge_scale"]])*priorTime(thetatab[["surge_time"]])
+  p_theta_star = priorRep(theta_star[["rep_scale"]])*priorScale(theta_star[["r_scale"]])*priorScale(theta_star[["r_scale_2"]])*priorScale(theta_star[["surge_scale"]])*priorScale2(theta_star[["end_scale"]])*priorTime(theta_star[["surge_time"]])*priorTime2(theta_star[["end_time"]])
+  p_theta = priorRep(thetatab[["rep_scale"]])*priorScale(thetatab[["r_scale"]])*priorScale(thetatab[["r_scale_2"]])*priorScale(thetatab[["surge_scale"]])*priorScale2(thetatab[["end_scale"]])*priorTime(thetatab[["surge_time"]])*priorTime2(thetatab[["end_time"]])
   
 
   # Calculate acceptance probability. Adjust for log sampling

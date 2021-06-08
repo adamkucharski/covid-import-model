@@ -36,9 +36,12 @@ for(local_nn in 1:length(local_names)){
   # Run inference  -------------------------------------------------------------
   
   # Define parameters
-  cap_outbreak_size <- 1e4 # Cap simulations to prevent runaway epidemics
   priorScale <- function(x){ifelse(abs(x)<=1,1,0)} # Prior on relative R values for non-travellers
-  priorTime <- function(x){ifelse(x>= (voc_n-14) & x < (voc_n+14),1,0)} # Prior on timing of surge effect
+  priorScale2 <- function(x){1} #ifelse(abs(x)<=1,1,0)} # Prior on relative R values for non-travellers
+  priorRep <- function(x){ifelse(x>=1,1,0)} #ifelse(abs(x)<=1,1,0)} # Prior on reporting value
+  priorTime <- function(x){ifelse(x>= (voc_n) & x < (voc_n+7),1,0)} # Prior on timing of surge effect
+  priorTime2 <- function(x){ifelse(x>= (step_3_n) & x < (step_3_n+7),1,0)} # Prior on timing of end change in R
+  
   
   
   # Fit model

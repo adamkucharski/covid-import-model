@@ -69,10 +69,13 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   import_f <- theta[["imp"]]
   daily_decline <- theta[["decline"]]
   dt_decline <- 1 #theta[["dt_decline"]] # Scale rate of change
+  rep_scale <- theta[["rep_scale"]]
   rep_vol <- theta[["rep_vol"]]
   rep_vol_seq <- theta[["rep_vol_seq"]]
   surge_scale <- theta[["surge_scale"]]
   surge_time <- theta[["surge_time"]]
+  end_scale <- theta[["end_scale"]]
+  end_time <- theta[["end_time"]]
   
   # Estimated India daily B.1.617.2 imports 
   daily_india <- (import_f*downweight_imports*all_india$daily_imports*ma_India_variant) #ma_India_variant
@@ -105,6 +108,7 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   # Get VOC date - or extract while fitting
   #voc_pick <- which(long_dates>voc_date) %>% min()
   voc_pick <- surge_time
+  end_pick <- end_time
   
   # Store_values
   store_vals <- rep(0,t_max)
@@ -120,7 +124,8 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   # Add onwards transmission from subsequent generations - reduces twice
   for(ii in 1:t_max){
     if(ii<voc_pick){r_pick_c <- r_pick} # Include possible effect of VOC measures
-    if(ii>=voc_pick){r_pick_c <- r_pick*surge_scale} # Include possible effect of VOC measures
+    if(ii>=voc_pick){r_pick_c <- r_pick*surge_scale} # Include possible effect of VOC measures (r_scale_2 = 1)
+    if(ii>=end_pick){r_pick_c <- r_pick*surge_scale*end_scale} # Include possible effect of VOC measures (r_scale_2 = 1)
     store_vals <- store_vals + store_vals[ii]*serial_mat[ii,]*r_pick_c*r_scale*r_scale_2
   }
   
@@ -128,8 +133,11 @@ fit_R_deterministic <- function(theta,run_n,add_days=25){
   
   # Calculate estimation interval
   pred_interval <- rbind(store_vals,store_vals,store_vals)
-  mean_val <-  store_vals
+  pred_interval[,voc_n:t_max] <- pred_interval[,voc_n:t_max]*rep_scale # Scale by surge testing
   
+  #mean_val <-  store_vals
+  mean_val <-  pred_interval[1,] # Include scale by surge testing
+
   # Observation model
   data_fit1 <- data_fit[!is.na(data_fit$N),]
   actual_617 <- data_fit1$B.1.617.2

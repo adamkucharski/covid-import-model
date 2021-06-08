@@ -19,16 +19,17 @@ if(!exists("all_uk")){
 # Load UK local data
 
 if(!exists("all_uk_p2_in")){
-  # all_uk_p2 <- read_csv(paste0(data_path,"merged_2021_06_01.csv"))
+  all_uk_p2 <- read_csv(paste0(data_path,"merged_2021_06_04.csv"))
+
+  #all_uk_p2$specimen_date <- lubridate::dmy(all_uk_p2$specimen_date) # convert dates
+
+  #all_uk_p2 %>% filter(specimen_date==as.Date("2021-05-20")) %>% group_by(pillar) %>% tally()
+  all_uk_p2a <- all_uk_p2 %>% filter(specimen_date>as.Date("2021-01-01") & asymptomatic_indicator=="N")
+  all_uk_p2a <- all_uk_p2a %>% select(NHSER_name,specimen_date,s_sgtf,v_variant,v_seq_result,v_specimen_date_sk)
+
+  write_csv(all_uk_p2a,paste0(data_path,"merged_2021_06_04_out.csv"))
   # 
-  # all_uk_p2$specimen_date <- lubridate::dmy(all_uk_p2$specimen_date) # convert dates
-  # 
-  # all_uk_p2a <- all_uk_p2 %>% filter(specimen_date>as.Date("2021-01-01"))
-  # all_uk_p2a <- all_uk_p2a %>% select(NHSER_name,specimen_date,s_sgtf,v_variant,v_seq_result,v_specimen_date_sk)
-  # 
-  # write_csv(all_uk_p2a,paste0(data_path,"merged_2021_06_01_out.csv"))
-  
-  all_uk_p2_in <- read_csv(paste0(data_path,"merged_2021_06_01_out.csv"))
+  all_uk_p2_in <- read_csv(paste0(data_path,"merged_2021_06_04_out.csv"))
 
 
 }
@@ -146,7 +147,7 @@ all_uk <- all_uk %>% filter(date>=date_pick)
 all_india <- all_india[1:nrow(all_uk),] # Avoid mismatched lengths
 
 if(local_run==T){
-  data_proportion <- head(data_proportion,-2) # Remove last X days
+  #data_proportion <- head(data_proportion,-2) # Remove last X days
 }else{
   data_proportion <- head(data_proportion,-2) # Remove last X days
 }
@@ -218,10 +219,13 @@ r_phe_report <- c(travel = 135/(331*0.704),non_travel = 245/(698*0.818)) # Repor
 
 # Variant of concern date (UK - 7th May)
 voc_date <- as.Date("2021-05-07")
+step_3_date <- as.Date("2021-05-17")
 
 voc_n <- as.numeric(voc_date - min(all_uk$date) +1)
 
 fit_n <- as.numeric(fit_date - min(all_uk$date) +1)
+
+step_3_n <- as.numeric(step_3_date - min(all_uk$date) +1)
 
 
 
