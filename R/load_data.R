@@ -31,6 +31,11 @@ if(!exists("all_uk_p2_in")){
   # 
   all_uk_p2_in <- read_csv(paste0(data_path,"merged_2021_06_04_out.csv"))
 
+  # Onset delay
+  all_uk_p2b <- all_uk_p2 %>% filter(specimen_date>as.Date("2021-04-01") & asymptomatic_indicator=="N")
+  delay_onset <- all_uk_p2b$specimen_date-all_uk_p2b$Onsetdate
+  delay_onset <- delay_onset[!is.na(delay_onset)] %>% as.numeric()
+  hist(delay_onset,breaks=seq(-0.5,28.5,1),xlim=c(0,30))
 
 }
 
@@ -139,7 +144,7 @@ date_uk_fit <- as.Date("2021-04-23")
 fit_date <- as.Date("2021-04-01") # Specify date to fit from
 
 
-all_uk <- head(all_uk,-1) # Remove final point because of bank holiday
+#all_uk <- head(all_uk,-2) # Remove final points because of bank holiday
 
 all_india <- all_india0 %>% filter(date>=date_pick)
 all_uk <- all_uk %>% filter(date>=date_pick)

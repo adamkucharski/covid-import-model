@@ -12,7 +12,7 @@ for(local_nn in 1:length(local_names)){
 
 # Table 1
 
-store_loc0 <- store_loc %>% filter(parameter=="R_traveller" | parameter=="R_non_traveller" | parameter=="R_recent" | parameter=="R_non_17") 
+store_loc0 <- store_loc %>% filter(parameter=="R_non_traveller" | parameter=="R_p7" | parameter=="R_p17" | parameter=="R_non_617") 
 
 output_A <- store_loc0 %>% pivot_wider(names_from = parameter, values_from = value)
 

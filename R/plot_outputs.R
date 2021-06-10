@@ -133,8 +133,8 @@ if(local_run==T){
     y_max <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$N)
     y_max2 <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$B.1.617.2)
   }else{
-    y_max <- 1e3
-    y_max2 <- 1e3
+    y_max <- 2e3
+    y_max2 <- 2e3
   }
 
 cvector <- matrix(NA,nrow=btsp,ncol=length(ma_UK_cases_2_a))
@@ -184,7 +184,7 @@ plot(all_uk$date,-100+0*ma_UK_cases,xlim=x_range2,ylim=c(0,y_max2),yaxs="i",ylab
 
 date_cut2 <- length(data_proportion$sample_date) # Subtract less reliable data
 date_cut1 <- date_cut2 - 5
-polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("2021-07-01"),data_proportion$sample_date[date_cut1]),c(0,0,1e3,1e3),lty=0,col=col2_grey)
+polygon(c(data_proportion$sample_date[date_cut1],as.Date("2021-07-01"),as.Date("2021-07-01"),data_proportion$sample_date[date_cut1]),c(0,0,1e4,1e4),lty=0,col=col2_grey)
 
 
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
@@ -413,7 +413,7 @@ r_617_2_end <- thetatab[,"rr"]*thetatab[,"r_scale"]*thetatab[,"surge_scale"]*the
 surge_drop <- date_pick + round(c.nume(thetatab[,"surge_time"])) + 1
 
 # Output summary for that location
-output_text <- cbind(rep(local_pick,12), c("R_traveller","R_non_traveller","R_p7","R_p17","R_non_617","ratio_617_2","ratio_617_2_recent","ratio_617_2_end","decline","decline_date","doubling","surge_report"),c(
+output_text <- cbind(rep(local_pick,13), c("R_traveller","R_non_traveller","R_p7","R_p17","R_non_617","ratio_617_2","ratio_617_2_recent","ratio_617_2_end","decline","decline_date","doubling","surge_report","end_scale"),c(
                   store_val[,2],
                   c.text(r_non_617),
                   c.text(r_617_2/r_non_617,sigF=3),
@@ -422,7 +422,8 @@ output_text <- cbind(rep(local_pick,12), c("R_traveller","R_non_traveller","R_p7
                   c.text(100*(1-thetatab[,"surge_scale"])),
                   paste0(surge_drop[1]," (95% CrI:",surge_drop[2]," - ",surge_drop[3],")"),
                   signif(doubling_time2,3),
-                  c.text(thetatab[,"rep_scale"]))
+                  c.text(thetatab[,"rep_scale"]),
+                  c.text(thetatab[,"end_scale"]))
 )
 output_text <- data.frame(output_text); names(output_text) <- c("region","parameter","value")
 write_csv(output_text,paste0("outputs/result_",local_nn,".csv"))
