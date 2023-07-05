@@ -19,7 +19,7 @@ if(!exists("all_uk")){
 # Load UK local data
 
 if(!exists("all_uk_p2_in")){
-  all_uk_p2 <- read_csv(paste0(data_path,"merged_2021_06_04.csv"))
+  all_uk_p2 <- read_csv(paste0(data_path,"merged_20210618.csv"))
 
   #all_uk_p2$specimen_date <- lubridate::dmy(all_uk_p2$specimen_date) # convert dates
 
@@ -27,9 +27,9 @@ if(!exists("all_uk_p2_in")){
   all_uk_p2a <- all_uk_p2 %>% filter(specimen_date>as.Date("2021-01-01") & asymptomatic_indicator=="N")
   all_uk_p2a <- all_uk_p2a %>% select(NHSER_name,specimen_date,s_sgtf,v_variant,v_seq_result,v_specimen_date_sk)
 
-  write_csv(all_uk_p2a,paste0(data_path,"merged_2021_06_04_out.csv"))
+  write_csv(all_uk_p2a,paste0(data_path,"merged_2021_06_18_out.csv"))
   # 
-  all_uk_p2_in <- read_csv(paste0(data_path,"merged_2021_06_04_out.csv"))
+  all_uk_p2_in <- read_csv(paste0(data_path,"merged_2021_06_18_out.csv"))
 
   # Onset delay
   all_uk_p2b <- all_uk_p2 %>% filter(specimen_date>as.Date("2021-04-01") & asymptomatic_indicator=="N")
@@ -71,10 +71,10 @@ tr_fig10 <- read_csv(paste0(data_path,"TR13_figure10.csv"))
 
 #all_uk_p2_in %>% filter(v_variant=="VOC-21APR-02") %>% group_by(NHSER_name) %>% tally()
 
+local_pick <- location_ID
+
 # Redo file load with local data
 if(local_run==TRUE){
-  
-  local_pick <- location_ID
   
   d1_local <- all_uk_p2_in %>% filter(NHSER_name==local_pick) # Get local data
   d1_sequenced <- d1_local %>% filter(!is.na(v_variant))
@@ -144,7 +144,7 @@ date_uk_fit <- as.Date("2021-04-23")
 fit_date <- as.Date("2021-04-01") # Specify date to fit from
 
 
-#all_uk <- head(all_uk,-2) # Remove final points because of bank holiday
+all_uk <- head(all_uk,-2) # Remove final 2 points because of delays
 
 all_india <- all_india0 %>% filter(date>=date_pick)
 all_uk <- all_uk %>% filter(date>=date_pick)

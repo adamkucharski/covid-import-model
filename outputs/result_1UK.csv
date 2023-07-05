@@ -1,0 +1,14 @@
+region,parameter,value
+UK,R_traveller,4.4 (95% CrI: 2-5.2)
+UK,R_non_traveller,1.5 (95% CrI: 1.4-1.7)
+UK,R_p7,1.4 (95% CrI: 1.3-1.5)
+UK,R_p17,1.5 (95% CrI: 1.5-1.6)
+UK,R_non_617,0.95 (95% CrI: 0.94-0.96)
+UK,ratio_617_2,1.62 (95% CrI: 1.5-1.75)
+UK,ratio_617_2_recent,1.46 (95% CrI: 1.35-1.52)
+UK,ratio_617_2_end,1.58 (95% CrI: 1.52-1.65)
+UK,decline,9.9 (95% CrI: 1.8-18)
+UK,decline_date,2021-05-12 (95% CrI:2021-05-09 - 2021-05-16)
+UK,doubling,10.5
+UK,surge_report,1.2 (95% CrI: 1.1-1.4)
+UK,end_scale,1.1 (95% CrI: 1-1.2)

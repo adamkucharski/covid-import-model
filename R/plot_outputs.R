@@ -84,7 +84,7 @@ title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 # UK cases
 
 # Extract UK fit data - some of this now deprecated
-if(local_run==T){y_max <- 2e3}else{y_max <- 6000}
+if(local_run==T){y_max <- 3e3}else{y_max <- 1e4}
 
 all_uk_fit <- all_uk %>% filter(date<date_uk_fit)
 total_days_uk <- length(all_uk_fit$date)
@@ -126,15 +126,15 @@ polygon(c(long_dates,rev(long_dates)),c(pred_interval_red[2,],rev(pred_interval_
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
-doubling_time2 <- doubling_est2(pred_interval[1,long_dates>=as.Date("2021-05-11")])
+doubling_time2 <- doubling_est2(pred_interval[1,long_dates>=as.Date("2021-05-20")])
 
 # Number non_B117
 if(local_run==T){
     y_max <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$N)
     y_max2 <- 1.05*max(data_proportion[!is.na(data_proportion$B.1.617.2),]$B.1.617.2)
   }else{
-    y_max <- 2e3
-    y_max2 <- 2e3
+    y_max <- 2.8e3
+    y_max2 <- y_max
   }
 
 cvector <- matrix(NA,nrow=btsp,ncol=length(ma_UK_cases_2_a))
@@ -218,16 +218,16 @@ pred_interval_prop <- apply(cvector,2,c.nume)
 
 plot(all_uk$date,-1+0*ma_UK_cases,xlim=x_range2,ylim=c(0,1),yaxs="i",ylab="Proportion",xlab="",main=paste0("Proportion B.1.617.2 in ",location_ID))
 lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
-lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
-lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
+#lines(c(voc_date,voc_date),c(0,1e7),col="grey",lty=2)
+#lines(c(step_3_date,step_3_date),c(0,1e7),col="purple",lty=2)
 
 data_proportion_plot <- data_proportion[!is.na(data_proportion$B.1.617.2),]
 
 plot_CI(data_proportion_plot$sample_date,data_proportion_plot$B.1.617.2,data_proportion_plot$N)
 #lines(long_dates,pred_interval[1,]/(ma_UK_cases_2+pred_interval[1,]),col="blue",lty=1)
 
-polygon(c(long_dates,rev(long_dates)),c(pred_interval_prop[2,],rev(pred_interval_prop[3,])),lty=0,col=col2b)
-lines(long_dates,pred_interval_prop[1,],col="blue",lty=1)
+#polygon(c(long_dates,rev(long_dates)),c(pred_interval_prop[2,],rev(pred_interval_prop[3,])),lty=0,col=col2b)
+#lines(long_dates,pred_interval_prop[1,],col="blue",lty=1)
 
 title(main=LETTERS[letter_ii],adj=0); letter_ii <- letter_ii+1
 
@@ -429,4 +429,14 @@ output_text <- data.frame(output_text); names(output_text) <- c("region","parame
 write_csv(output_text,paste0("outputs/result_",local_nn,".csv"))
 
 
+
+
+# India cases
+x_range <- as.Date(c("2021-03-01","2021-05-03"))
+all_india1 <- all_india %>% filter(date<as.Date("2021-04-26"))
+plot(all_india1$date,all_india1$cases_new/1e3,xlim=x_range,ylim=c(0,5e2),yaxs="i",ylab="new cases (thousands)",xlab="",main="")
+lines(c(india_red_list,india_red_list),c(0,1e7),col="red",lty=2)
+
+dev.copy(png,paste0("outputs/India.png"),units="cm",width=15,height=10,res=200)
+dev.off()
 
